@@ -3,9 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { spawn } from 'child_process'
-import axios from 'axios'
+import path from 'path'
 
-let pythonProcess; // Reference to the Python child process
+let pythonProcess // Reference to the Python child process
 
 function createWindow(): void {
   // Create the browser window.
@@ -39,7 +39,18 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
-  pythonProcess = spawn(`python app.py 5006`, { detached: true, shell: true, stdio: 'inherit' })
+  if (is.dev) {
+    pythonProcess = spawn(`python app.py 5006`, { detached: true, shell: true, stdio: 'inherit' })
+  } else {
+    // Dynamic script assignment for starting Flask in production
+    const runFlask = {
+      darwin: `open -gj "${path.join(app.getAppPath(), 'resources', 'app.app')}" --args`,
+      linux: './resources/app/app',
+      win32: 'start ./resources/app/app.exe'
+    }[process.platform]
+
+    pythonProcess = spawn(`${runFlask} 5006`, { detached: false, shell: true, stdio: 'pipe' });
+  }
 }
 
 /**
