@@ -3,3 +3,9 @@ dist
 out
 .DS_Store
 *.log*
+
+#cache
+app.pyc
+app.spec
+__pycache__
+venvp
