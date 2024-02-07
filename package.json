@@ -56,7 +56,7 @@
     "extraResources": [
       {
         "from": "./resources",
-        "to": "."
+        "to": "./kamal"
       }
     ]
   }

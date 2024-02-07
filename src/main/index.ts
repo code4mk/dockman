@@ -3,16 +3,16 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { spawn } from 'child_process'
-import path from 'path'
 
 let pythonProcess // Reference to the Python child process
 
 function createWindow(): void {
   const runFlask = {
-    darwin: `open -gj "${path.join(app.getAppPath(), 'resources', 'app.app')}" --args`,
+    darwin: `open -gj "/Applications/dockman.app/Contents/Resources/kamal/app.app" --args`,
     linux: './resources/app/app',
     win32: 'start ./resources/app/app.exe'
-  }[process.platform]
+  }[process.platform];
+
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
