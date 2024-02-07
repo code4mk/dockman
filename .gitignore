@@ -9,3 +9,6 @@ app.pyc
 app.spec
 __pycache__
 venvp
+
+resources/app*
+build/app

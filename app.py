@@ -5,47 +5,24 @@ from flask_cors import CORS
 app = Flask(__name__)
 app_config = {"host": "0.0.0.0", "port": sys.argv[1]}
 
-"""
----------------------- DEVELOPER MODE CONFIG -----------------------
-"""
-# Developer mode uses app.py
-if "app.py" in sys.argv[0]:
-  # Update app config
-  app_config["debug"] = True
+# Configure CORS
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-  # CORS settings
-  cors = CORS(
-    app,
-    resources={r"/*": {"origins": "http://localhost*"}},
-  )
+# Additional CORS headers (optional)
+app.config["CORS_HEADERS"] = "Content-Type"
 
-  # CORS headers
-  app.config["CORS_HEADERS"] = "Content-Type"
-
-
-"""
---------------------------- REST CALLS -----------------------------
-"""
-# Remove and replace with your own
+# Example route with CORS enabled
 @app.route("/example")
 def example():
+    # See /src/components/App.js for frontend call
+    return jsonify({'name': 'kamal', 'age': '28'})
 
-  # See /src/components/App.js for frontend call
-  return jsonify({'name': 'kamal', 'age': '28'})
-  return jsonify("Example response from Flask! Learn more in /app.py & /src/components/App.js")
-
-
-"""
--------------------------- APP SERVICES ----------------------------
-"""
-# Quits Flask on Electron exit
+# Quit route
 @app.route("/quit")
 def quit():
-  shutdown = request.environ.get("werkzeug.server.shutdown")
-  shutdown()
-
-  return
-
+    shutdown = request.environ.get("werkzeug.server.shutdown")
+    shutdown()
+    return
 
 if __name__ == "__main__":
-  app.run(**app_config)
+    app.run(**app_config)

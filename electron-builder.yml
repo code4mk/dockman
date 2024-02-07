@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.dockman.app
 productName: dockman
 directories:
   buildResources: build
@@ -9,9 +9,7 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-  - extraFiles:
-      from: ./resources/app
-      to: resources/app
+
 asarUnpack:
   - resources/**
 win:
@@ -36,7 +34,7 @@ linux:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
+  maintainer: code4mk.org
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
