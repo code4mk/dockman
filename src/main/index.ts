@@ -2,17 +2,19 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { spawn } from 'child_process'
+import { spawn, exec } from 'child_process'
+import { execFile } from 'child_process'
 
 let pythonProcess // Reference to the Python child process
 
 function createWindow(): void {
-  const runFlask = {
-    darwin: `open -gj "/Applications/dockman.app/Contents/Resources/kamal/app.app" --args`,
+  console.log('Creating main window...')
+
+  const runFlask: string = {
+    darwin: '/Applications/dockman.app/Contents/Resources/kamal/app/app',
     linux: './resources/app/app',
     win32: 'start ./resources/app/app.exe'
-  }[process.platform];
-
+  }[process.platform]
 
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -28,11 +30,13 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
+    console.log('Main window is ready to show.')
     mainWindow.show()
     // mainWindow.webContents.openDevTools()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
+    console.log(`Opening external URL: ${details.url}`)
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
@@ -46,18 +50,34 @@ function createWindow(): void {
   }
 
   if (is.dev) {
-    pythonProcess = spawn(`python app.py 5006`, { detached: true, shell: true, stdio: 'inherit' })
+    pythonProcess = spawn(`python app.py 5656`, { detached: true, shell: true, stdio: 'inherit' })
+    console.log('Development mode: Python process started.')
   } else {
-    pythonProcess = spawn(`${runFlask} 5006`, { detached: true, shell: true, stdio: 'inherit' })
+    pythonProcess = execFile(runFlask, ['5656'])
+    console.log('Production mode: Backend is running on port 5656.')
   }
 }
 
 function shutdown(): void {
-  console.log('shutdown')
-  // Stop the Python script (send SIGTERM)
-  if (pythonProcess) {
+  console.log('Shutting down...')
+
+  if (is.dev) {
     pythonProcess.kill('SIGTERM')
-    pythonProcess.kill('SIGKILL')
+    console.log('Development mode: Python process killed.')
+  } else {
+    // Replace 5006 with the actual port used in production
+    const portToKill = 5656
+
+    // Execute the kill command
+    const command = `kill -9 $(lsof -t -i:${portToKill})`
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Production mode: Error killing process:', error.message)
+      } else {
+        console.log('Production mode: Process killed successfully:', stdout)
+      }
+    })
   }
 }
 
@@ -65,10 +85,11 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
   app.on('browser-window-created', (_, window) => {
+    console.log('Browser window created.')
     optimizer.watchWindowShortcuts(window)
   })
 
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('ping', () => console.log('Received ping. Sending pong...'))
 
   createWindow()
 
@@ -78,7 +99,6 @@ app.whenReady().then(() => {
 })
 
 app.on('before-quit', () => {
-  if (is.dev) {
-    shutdown()
-  }
+  console.log('Before quit event. Initiating shutdown.')
+  shutdown()
 })
