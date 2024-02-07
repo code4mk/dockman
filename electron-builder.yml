@@ -1,4 +1,4 @@
-appId: com.dockman.app
+appId: com.electron.app
 productName: dockman
 directories:
   buildResources: build
