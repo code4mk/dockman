@@ -1,9 +1,9 @@
 {
   "name": "dockman",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "DockMan - Manage Docker smartly",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": "code4mk.org",
   "homepage": "https://electron-vite.org",
   "scripts": {
     "backendBuild": "node backendBuild.js",

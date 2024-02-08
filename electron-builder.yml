@@ -1,5 +1,7 @@
-appId: dev.dockman.app
+appId: org.code4mk.dockman
 productName: dockman
+author: code4mk.org
+copyright: Copyright © year ${author}
 directories:
   buildResources: build
 files:
