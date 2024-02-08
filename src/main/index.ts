@@ -9,6 +9,7 @@ let pythonProcess // Reference to the Python child process
 
 function createWindow(): void {
   console.log('Creating main window...')
+  console.log('path' + app.getAppPath())
 
   const runFlask: string = {
     darwin: '/Applications/dockman.app/Contents/Resources/kamal/app/app',
@@ -21,6 +22,9 @@ function createWindow(): void {
     width: 1050,
     height: 670,
     show: false,
+    center: true,
+    minHeight: 670,
+    minWidth: 1050,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
