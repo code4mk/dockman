@@ -4,7 +4,7 @@ const spawnOptions = { detached: false, shell: true, stdio: 'inherit' }
 function buildPython() {
   console.log('Creating Python distribution files...')
 
-  const app = 'app.py'
+  const app = './backend/app.py'
   const icon = './public/favicon.ico'
 
   const options = [

@@ -36,7 +36,6 @@ function createWindow(): void {
   mainWindow.on('ready-to-show', () => {
     console.log('Main window is ready to show.')
     mainWindow.show()
-    startDockerEngine()
     // mainWindow.webContents.openDevTools()
   })
 
@@ -55,7 +54,7 @@ function createWindow(): void {
   }
 
   if (is.dev) {
-    pythonProcess = spawn(`python app.py 5656`, { detached: true, shell: true, stdio: 'inherit' })
+    pythonProcess = spawn(`python ./backend/run.py 5656`, { detached: true, shell: true, stdio: 'inherit' })
     console.log('Development mode: Python process started.')
   } else {
     pythonProcess = execFile(runFlask, ['5656'])
@@ -107,44 +106,4 @@ app.on('before-quit', () => {
   console.log('Before quit event. Initiating shutdown.')
   shutdown()
 })
-
-
-function startDockerEngine() {
-  try {
-    // Check if the 'dockman' context already exists
-    const existingContexts = execSync('docker context ls -q').toString().trim().split('\n');
-
-    if (existingContexts.includes('dockman1')) {
-      console.log('Custom context "dockman1" already exists.');
-    } else {
-      // Set the default host for 'dockman' context (modify the host value)
-      const dockerHost = 'unix:///var/run/docker.sock';  // Modify the host value accordingly
-      const contextCreateCommand = `docker context create dockman1 --description="dockman1" --default-stack-orchestrator=swarm --docker "host=${dockerHost}"`;
-      execSync(contextCreateCommand);
-      console.log('Custom context "dockman" created with default host.');
-    }
-
-    // Set 'dockman' context as active
-    execSync('docker context use dockman1');
-
-    // Open Docker engine using spawn
-    const dockerProcess = spawn('docker', ['info']);
-
-    dockerProcess.stdout.on('data', (data) => {
-      console.log(`Docker Engine Output: ${data}`);
-    });
-
-    dockerProcess.stderr.on('data', (data) => {
-      console.error(`Docker Engine Error: ${data}`);
-    });
-
-    dockerProcess.on('close', (code) => {
-      console.log(`Docker Engine process exited with code ${code}`);
-    });
-  } catch (error) {
-    console.error('Error starting Docker engine:', error.message);
-    // Handle errors as needed
-  }
-}
-
 
