@@ -9,5 +9,4 @@ bp = Blueprint('container', __name__)
 def lists():
     container = TheContainer(docker_socket="unix:///Users/code4mk/.colima/default/docker.sock")
     the_list = container.get_lists()
-    print(str(the_list))
     return jsonify({'data': the_list})

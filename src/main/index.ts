@@ -33,12 +33,6 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    console.log('Main window is ready to show.')
-    mainWindow.show()
-    // mainWindow.webContents.openDevTools()
-  })
-
   mainWindow.webContents.setWindowOpenHandler((details) => {
     console.log(`Opening external URL: ${details.url}`)
     shell.openExternal(details.url)
