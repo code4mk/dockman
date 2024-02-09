@@ -10,5 +10,5 @@ app.spec
 __pycache__
 venvp
 
-resources/app*
-build/app
+resources/dockman_backend*
+build/dockman_backend

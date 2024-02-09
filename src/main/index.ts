@@ -12,9 +12,9 @@ function createWindow(): void {
   console.log('path' + app.getAppPath())
 
   const runFlask: string = {
-    darwin: '/Applications/dockman.app/Contents/Resources/kamal/app/app',
-    linux: './resources/app/app',
-    win32: 'start ./resources/app/app.exe'
+    darwin: '/Applications/dockman.app/Contents/Resources/kamal/dockman_server/dockman_server',
+    linux: './resources/dockman_server/dockman_server',
+    win32: 'start ./resources/dockman_server/dockman_server.exe'
   }[process.platform]
 
   // Create the browser window.
