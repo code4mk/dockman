@@ -79,8 +79,35 @@ function Container(): JSX.Element {
   }
   return (
     <BaseLayout>
-      <div>
+      <div className="flex items-center justify-between mb-1">
+        {/* Left - Title */}
         <div>
+          <h1 className="text-2xl font-bold">Container List</h1>
+        </div>
+
+        {/* Middle - Filter */}
+        <div>
+          {/* Add your filter component here */}
+          {/* Example: <FilterComponent /> */}
+        </div>
+
+        {/* Right - Button */}
+        <div>
+          <div>
+            <button
+              type="button"
+              className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              New Container
+              <CursorArrowRippleIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Container List */}
+      <div>
+        <div className="mt-6">
           <ul
             role="list"
             className="mt-1 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4"
@@ -127,19 +154,19 @@ function Container(): JSX.Element {
                 <div className="flex-shrink-0 flex items-center px-2  rounded-r-md ">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
                   >
                     <CursorArrowRippleIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
                   </button>
                   <button
                     type="button"
-                    className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
+                    className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
                   >
                     Inspect
                   </button>
                   <button
                     type="button"
-                    className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
+                    className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
                   >
                     Logs
                   </button>
