@@ -1,19 +1,5 @@
-/*
-  This example requires some changes to your config:
-  
-  ```
-  // tailwind.config.js
-  module.exports = {
-    // ...
-    plugins: [
-      // ...
-      require('@tailwindcss/forms'),
-    ],
-  }
-  ```
-*/
-import { Fragment, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Fragment, useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import {
   Bars3Icon,
@@ -30,14 +16,7 @@ import {
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import theIcon from './icon.png'
 
-const navigation = [
-  { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-  { name: 'Project', href: '/project', icon: CubeIcon, current: false },
-  { name: 'Container', href: '/container', icon: CogIcon, current: false },
-  { name: 'Image', href: '/image', icon: CircleStackIcon, current: false },
-  { name: 'Volume', href: '/volume', icon: ChartPieIcon, current: false },
-  { name: 'Network', href: '/network', icon: ServerIcon, current: false }
-]
+
 const teams = [
   // { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
   // { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
@@ -52,8 +31,73 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
+// function isPathActive(currentLogic, pathname) {
+//   //let a = currentLogic.some((logic) => new RegExp(logic).test(pathname));
+//   console.log({
+//     a: currentLogic,
+//     b: pathname
+//   })
+// }
+
 export default function BaseLayout({children}: any) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location: any = useLocation()
+
+  const initialNavigation = [
+    { name: 'Dashboard', href: '#', icon: HomeIcon, is_active_logic: ['^/$', '^/dashboard'] },
+    {
+      name: 'Project',
+      href: '/project',
+      icon: CubeIcon,
+      is_active: false,
+      is_active_logic: ['^/project', '^/project/[a-zA-Z0-9]+'],
+    },
+    {
+      name: 'Container',
+      href: '/container',
+      icon: CogIcon,
+      is_active: false,
+      is_active_logic: ['^/container', '^/container/[a-zA-Z0-9]+'],
+    },
+    {
+      name: 'Image',
+      href: '/image',
+      icon: CircleStackIcon,
+      is_active: false,
+      is_active_logic: ['^/image'],
+    },
+    {
+      name: 'Volume',
+      href: '/volume',
+      icon: ChartPieIcon,
+      is_active: false,
+      is_active_logic: ['^/volume'],
+    },
+    {
+      name: 'Network',
+      href: '/network',
+      icon: ServerIcon,
+      is_active: false,
+      is_active_logic: ['^/network'],
+    },
+  ];
+
+  const [navigation, setNavigation] = useState(initialNavigation)
+
+  useEffect(() => {
+    if (location.pathname) {
+      console.log(location.pathname)
+
+      const updatedNavigation = initialNavigation.map((item: any) => {
+        const isPathMatch = item.is_active_logic.some((logic: string) =>
+          new RegExp(logic).test(location.pathname)
+        )
+        return { ...item, is_active: isPathMatch }
+      })
+
+      setNavigation(updatedNavigation)
+    }
+  }, [location.pathname])
 
   return (
     <>
@@ -121,7 +165,7 @@ export default function BaseLayout({children}: any) {
                                 <Link
                                   to={item.href}
                                   className={classNames(
-                                    item.current
+                                    item.is_active
                                       ? 'bg-gray-50 text-teal-600'
                                       : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50',
                                     'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
@@ -129,7 +173,7 @@ export default function BaseLayout({children}: any) {
                                 >
                                   <item.icon
                                     className={classNames(
-                                      item.current
+                                      item.is_active
                                         ? 'text-teal-600'
                                         : 'text-gray-400 group-hover:text-teal-600',
                                       'h-6 w-6 shrink-0'
@@ -147,7 +191,7 @@ export default function BaseLayout({children}: any) {
                             Your teams
                           </div>
                           <ul role="list" className="-mx-2 mt-2 space-y-1">
-                            {teams.map((team) => (
+                            {teams.map((team: any) => (
                               <li key={team.name}>
                                 <a
                                   href={team.href}
@@ -212,7 +256,7 @@ export default function BaseLayout({children}: any) {
                         <Link
                           to={item.href}
                           className={classNames(
-                            item.current
+                            item.is_active
                               ? 'bg-gray-50 text-teal-600'
                               : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50',
                             'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
@@ -220,7 +264,7 @@ export default function BaseLayout({children}: any) {
                         >
                           <item.icon
                             className={classNames(
-                              item.current
+                              item.is_active
                                 ? 'text-teal-600'
                                 : 'text-gray-400 group-hover:text-teal-600',
                               'h-6 w-6 shrink-0'
@@ -236,7 +280,7 @@ export default function BaseLayout({children}: any) {
                 <li>
                   <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
                   <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {teams.map((team) => (
+                    {teams.map((team: any) => (
                       <li key={team.name}>
                         <a
                           href={team.href}
