@@ -11,7 +11,8 @@ import {
   CircleStackIcon,
   ServerIcon,
   CogIcon,
-  CubeIcon
+  CubeIcon,
+  UserCircleIcon
 } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import theIcon from './icon.png'
@@ -86,8 +87,6 @@ export default function BaseLayout({children}: any) {
 
   useEffect(() => {
     if (location.pathname) {
-      console.log(location.pathname)
-
       const updatedNavigation = initialNavigation.map((item: any) => {
         const isPathMatch = item.is_active_logic.some((logic: string) =>
           new RegExp(logic).test(location.pathname)
@@ -243,10 +242,10 @@ export default function BaseLayout({children}: any) {
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
-            <div className="flex h-16 shrink-0 items-center">
-              <img className="h-14 w-14" src={theIcon} alt="dockman" />
-              <p className="text-lg ml-4">DockMan</p>
-            </div>
+          <div className="flex h-16 shrink-0 items-center">
+            <img className="h-14 w-14" src={theIcon} alt="dockman" />
+            <p className="ml-4 font-bold text-teal-800 text-xl">DockMan</p>
+          </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
@@ -353,17 +352,13 @@ export default function BaseLayout({children}: any) {
                 <Menu as="div" className="relative">
                   <Menu.Button className="-m-1.5 flex items-center p-1.5">
                     <span className="sr-only">Open user menu</span>
-                    <img
-                      className="h-8 w-8 rounded-full bg-gray-50"
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      alt=""
-                    />
+                    <UserCircleIcon className="h-8 w-8 rounded-full bg-gray-50" />
                     <span className="hidden lg:flex lg:items-center">
                       <span
                         className="ml-4 text-sm font-semibold leading-6 text-gray-900"
                         aria-hidden="true"
                       >
-                        Tom Cook
+                        Mostafa Kamal
                       </span>
                       <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" aria-hidden="true" />
                     </span>
