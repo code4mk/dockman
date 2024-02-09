@@ -115,7 +115,7 @@ function Container(): JSX.Element {
             {containers.map((item) => (
               <li
                 key={item.container_id}
-                className="col-span-full flex rounded-md  overflow-hidden  bg-white -mt-2 border-l border-t border-b border-r border-1 border-slate-200  shadow-lg "
+                className="col-span-full flex rounded-md  overflow-hidden  bg-white -mt-2 border-l border-t border-b border-r border-1 border-slate-200  shadow-lg hover:shadow-xl "
               >
                 <div
                   className={classNames(
