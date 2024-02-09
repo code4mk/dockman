@@ -1,0 +1,5 @@
+Flask
+flask-cors
+pyinstaller
+Flask-SQLAlchemy
+flask_migrate

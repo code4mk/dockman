@@ -1,13 +1,12 @@
 import BaseLayout from '@layouts/Base'
 import { Link } from 'react-router-dom'
 
-function About(): JSX.Element {
+function Container(): JSX.Element {
   return (
     <BaseLayout>
-      <p>kamal is here</p>
-      <Link to="/">home</Link>
+      <p>container</p>
     </BaseLayout>
   )
 }
 
-export default About
+export default Container

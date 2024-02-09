@@ -13,33 +13,36 @@
   ```
 */
 import { Fragment, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import {
   Bars3Icon,
   BellIcon,
-  CalendarIcon,
   ChartPieIcon,
   Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
   HomeIcon,
-  UsersIcon,
-  XMarkIcon
+  XMarkIcon,
+  CircleStackIcon,
+  ServerIcon,
+  BoltIcon,
+  CogIcon,
+  CubeIcon
 } from '@heroicons/react/24/outline'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import theIcon from './icon.png'
 
 const navigation = [
   { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-  { name: 'Team', href: '#', icon: UsersIcon, current: false },
-  { name: 'Projects', href: '#', icon: FolderIcon, current: false },
-  { name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
-  { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
-  { name: 'Reports', href: '#', icon: ChartPieIcon, current: false }
+  { name: 'Project', href: '/project', icon: CubeIcon, current: false },
+  { name: 'Container', href: '/container', icon: CogIcon, current: false },
+  { name: 'Image', href: '/image', icon: CircleStackIcon, current: false },
+  { name: 'Volume', href: '/volume', icon: ChartPieIcon, current: false },
+  { name: 'Network', href: '/network', icon: ServerIcon, current: false }
 ]
 const teams = [
-  { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
-  { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
-  { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false }
+  // { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
+  // { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
+  // { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false }
 ]
 const userNavigation = [
   { name: 'Your profile', href: '#' },
@@ -116,8 +119,8 @@ export default function BaseLayout({children}: any) {
                           <ul role="list" className="-mx-2 space-y-1">
                             {navigation.map((item) => (
                               <li key={item.name}>
-                                <a
-                                  href={item.href}
+                                <Link
+                                  to={item.href}
                                   className={classNames(
                                     item.current
                                       ? 'bg-gray-50 text-indigo-600'
@@ -135,7 +138,7 @@ export default function BaseLayout({children}: any) {
                                     aria-hidden="true"
                                   />
                                   {item.name}
-                                </a>
+                                </Link>
                               </li>
                             ))}
                           </ul>
@@ -198,11 +201,8 @@ export default function BaseLayout({children}: any) {
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
             <div className="flex h-16 shrink-0 items-center">
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                alt="Your Company"
-              />
+              <img className="h-14 w-14" src={theIcon} alt="dockman" />
+              <p className="text-lg ml-4">DockMan</p>
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -210,8 +210,8 @@ export default function BaseLayout({children}: any) {
                   <ul role="list" className="-mx-2 space-y-1">
                     {navigation.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
+                        <Link
+                          to={item.href}
                           className={classNames(
                             item.current
                               ? 'bg-gray-50 text-indigo-600'
@@ -229,7 +229,7 @@ export default function BaseLayout({children}: any) {
                             aria-hidden="true"
                           />
                           {item.name}
-                        </a>
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -296,22 +296,7 @@ export default function BaseLayout({children}: any) {
             <div className="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true" />
 
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-              <form className="relative flex flex-1" action="#" method="GET">
-                <label htmlFor="search-field" className="sr-only">
-                  Search
-                </label>
-                <MagnifyingGlassIcon
-                  className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
-                  aria-hidden="true"
-                />
-                <input
-                  id="search-field"
-                  className="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-                  placeholder="Search..."
-                  type="search"
-                  name="search"
-                />
-              </form>
+              <div className="relative flex flex-1"></div>
               <div className="flex items-center gap-x-4 lg:gap-x-6">
                 <button type="button" className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
                   <span className="sr-only">View notifications</span>
