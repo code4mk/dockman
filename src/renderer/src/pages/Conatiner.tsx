@@ -1,8 +1,9 @@
 import BaseLayout from '@layouts/Base'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { http } from '@utils/http'
 import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
 import { CubeIcon } from '@heroicons/react/24/outline'
+import { useEffect, useState } from 'react'
 
 const containers = [
   {
@@ -72,11 +73,18 @@ function classNames(...classes) {
 }
 
 function Container(): JSX.Element {
+  const location = useLocation()
+  const [containers, setContainers] = useState([] as any)
+
   function getData(): void {
     http.get('/container').then((response) => {
-      console.log(response.data)
+      console.log(response.data.data)
+      setContainers(response.data?.data)
     })
   }
+  useEffect(() => {
+    getData()
+  },[location.pathname])
   return (
     <BaseLayout>
       <div className="flex items-center justify-between mb-1">
@@ -114,7 +122,7 @@ function Container(): JSX.Element {
           >
             {containers.map((item) => (
               <li
-                key={item.container_id}
+                key={item.short.container_id}
                 className="col-span-full flex rounded-md  overflow-hidden  bg-white -mt-2 border-l border-t border-b border-r border-1 border-slate-200  shadow-lg hover:shadow-xl "
               >
                 <div
@@ -124,7 +132,7 @@ function Container(): JSX.Element {
                 >
                   <CubeIcon
                     className={classNames(
-                      item.status == 'up'
+                      item.short.status == 'running'
                         ? 'text-teal-700'
                         : 'text-gray-400 group-hover:text-teal-800',
                       'h-10 w-10 shrink-0'
@@ -136,16 +144,16 @@ function Container(): JSX.Element {
                 <div className="flex flex-1 items-center rounded-l-md">
                   <div className="flex-1 px-4 py-2 text-sm">
                     <div className="flex items-center">
-                      <p className="font-medium text-gray-900 mr-2">{item.name}</p>
+                      <p className="font-medium text-gray-900 mr-2">{item.short.container_name}</p>
                       <div className="bg-slate-100 px-2 py-1 text-xs font-normal text-slate-500 rounded-md">
-                        {item.image}
+                        {item.short.image}
                       </div>
                     </div>
-                    <p className="text-gray-500">Container ID: {item.container_id}</p>
+                    <p className="text-gray-500">Container ID: {item.short.container_id}</p>
                     <p
-                      className={`text-sm font-medium ${item.status === 'up' ? 'text-green-500' : 'text-red-500'}`}
+                      className={`text-sm font-medium ${item.short.status === 'running' ? 'text-green-500' : 'text-red-500'}`}
                     >
-                      {item.status}
+                      {item.short.status}
                     </p>
                   </div>
                 </div>
