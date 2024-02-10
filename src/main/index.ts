@@ -34,9 +34,14 @@ function createWindow(): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    console.log(`Opening external URL: ${details.url}`)
     shell.openExternal(details.url)
     return { action: 'deny' }
+  })
+
+  mainWindow.on('ready-to-show', () => {
+    console.log('Main window is ready to show.')
+    mainWindow.show()
+    // mainWindow.webContents.openDevTools()
   })
 
   // HMR for renderer based on electron-vite cli.

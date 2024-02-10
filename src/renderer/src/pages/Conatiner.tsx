@@ -1,72 +1,9 @@
 import BaseLayout from '@layouts/Base'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { http } from '@utils/http'
 import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
 import { CubeIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
-
-const containers = [
-  {
-    container_id: 'b4afe3135829',
-    image: 'drf_friend_api:1.0.6',
-    command: "/bin/sh -c 'supervi…",
-    created: '5 hours ago',
-    status: 'up',
-    ports: '0.0.0.0:8020->8000/tcp, :::8020->8000/tcp',
-    name: 'quizzical_raman'
-  },
-  {
-    container_id: '8dbbc9460378',
-    image: 'elestio/pgadmin:latest',
-    command: '/entrypoint.sh',
-    created: '6 hours ago',
-    status: 'up',
-    ports: '80/tcp, 443/tcp, 0.0.0.0:5050->5050/tcp, :::5050->5050/tcp',
-    name: 'the_pgadmin4'
-  },
-  {
-    container_id: '3b468f18d5b4',
-    image: 'postgres:16',
-    command: 'docker-entrypoint.s…',
-    created: '6 hours ago',
-    status: 'up',
-    ports: '0.0.0.0:5432->5432/tcp, :::5432->5432/tcp',
-    name: 'the_postgres4'
-  },
-  {
-    container_id: '905a17200a0c',
-    image: 'airbyte/proxy:0.50.30',
-    command: './run.sh ./run.sh',
-    created: '7 days ago',
-    status: 'stop',
-    name: 'airbyte-proxy'
-  },
-  {
-    container_id: '16e1c3911d63',
-    image: 'airbyte/webapp:0.50.30',
-    command: '/docker-entrypoint.…',
-    created: '7 days ago',
-    status: 'stop',
-    name: 'airbyte-webapp'
-  },
-  {
-    container_id: '18bf68487b60',
-    image: 'airbyte/connector-builder-server:0.50.30',
-    command: '/bin/bash -c airbyt…',
-    created: '7 days ago',
-    status: 'up',
-    ports: '0.0.0.0:32771->80/tcp, :::32771->80/tcp',
-    name: 'airbyte-connector'
-  }
-]
-
-// const projects = containers.map((container) => ({
-//   name: container.names,
-//   initials: container.names.substring(0, 2).toUpperCase(),
-//   href: container.ports,
-//   members: container.status === 'up' ? 'Running' : 'Stopped',
-//   bgColor: container.status === 'up' ? 'bg-green-500' : 'bg-red-500'
-// }))
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -82,9 +19,17 @@ function Container(): JSX.Element {
       setContainers(response.data?.data)
     })
   }
+
+  function portOpenOnBrowser(url): void {
+    if (url.length) {
+      window.open(`https://${url[0]}`, "_blank", "frame=false,nodeIntegration=no");
+    }
+  }
+
   useEffect(() => {
     getData()
-  },[location.pathname])
+  }, [location.pathname])
+  
   return (
     <BaseLayout>
       <div className="flex items-center justify-between mb-1">
@@ -155,12 +100,14 @@ function Container(): JSX.Element {
                     >
                       {item.short.status}
                     </p>
+                    <a href="http://localhost:5656/container" target="_blank">open now</a>
                   </div>
                 </div>
 
                 {/* Right side */}
                 <div className="flex-shrink-0 flex items-center px-2  rounded-r-md ">
                   <button
+                    onClick={() => portOpenOnBrowser(item.short.ports)}
                     type="button"
                     className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
                   >
