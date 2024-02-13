@@ -53,7 +53,7 @@ function createWindow(): void {
   }
 
   if (is.dev) {
-    pythonProcess = spawn(`python ./backend/run.py 5656`, { detached: true, shell: true, stdio: 'inherit' })
+    pythonProcess = spawn(`python ./backend/run.py 5656 --reload`, { detached: true, shell: true, stdio: 'inherit' })
     console.log('Development mode: Python process started.')
   } else {
     pythonProcess = execFile(runFlask, ['5656'])

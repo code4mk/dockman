@@ -5,7 +5,7 @@ import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
 import { CubeIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 
-function classNames(...classes) {
+function classNames(...classes: string[]): string {
   return classes.filter(Boolean).join(' ')
 }
 
@@ -22,14 +22,21 @@ function Container(): JSX.Element {
 
   function portOpenOnBrowser(url): void {
     if (url.length) {
-      window.open(`https://${url[0]}`, "_blank", "frame=false,nodeIntegration=no");
+      window.open(`http://${url[0]}`, "_blank", "frame=false,nodeIntegration=no");
     }
   }
 
   useEffect(() => {
     getData()
+    // Fetch data every 10 seconds
+    const intervalId = setInterval(() => {
+      getData()
+    }, 10000)
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId)
   }, [location.pathname])
-  
+
   return (
     <BaseLayout>
       <div className="flex items-center justify-between mb-1">
@@ -65,7 +72,7 @@ function Container(): JSX.Element {
             role="list"
             className="mt-1 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4"
           >
-            {containers.map((item) => (
+            {containers?.map((item) => (
               <li
                 key={item.short.container_id}
                 className="col-span-full flex rounded-md  overflow-hidden  bg-white -mt-2 border-l border-t border-b border-r border-1 border-slate-200  shadow-lg hover:shadow-xl "
@@ -89,18 +96,22 @@ function Container(): JSX.Element {
                 <div className="flex flex-1 items-center rounded-l-md">
                   <div className="flex-1 px-4 py-2 text-sm">
                     <div className="flex items-center">
-                      <p className="font-medium text-gray-900 mr-2">{item.short.container_name}</p>
-                      <div className="bg-slate-100 px-2 py-1 text-xs font-normal text-slate-500 rounded-md">
+                      <p className="font-medium text-md  text-gray-900 mr-2">
+                        {item.short.container_name}
+                      </p>
+                      <div className="bg-slate-100 px-2 py-1 text-xs font-normal text-slate-500 rounded-md cursor-pointer hover:underline">
                         {item.short.image}
                       </div>
                     </div>
-                    <p className="text-gray-500">Container ID: {item.short.container_id}</p>
+                    <p className="text-gray-500">
+                      <span className="">{item.short.container_id}</span>
+                    </p>
+
                     <p
-                      className={`text-sm font-medium ${item.short.status === 'running' ? 'text-green-500' : 'text-red-500'}`}
+                      className={`text-sm font-medium ${item.short.status === 'running' ? 'text-green-500' : 'text-gray-500'}`}
                     >
                       {item.short.status}
                     </p>
-                    <a href="http://localhost:5656/container" target="_blank">open now</a>
                   </div>
                 </div>
 

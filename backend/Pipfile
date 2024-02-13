@@ -10,6 +10,8 @@ pyinstaller = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
 dock-craftsman = {file = "dock-craftsman", editable = true}
+humanize = "*"
+python-dateutil = "*"
 
 [dev-packages]
 

@@ -49,39 +49,39 @@ export default function BaseLayout({children}: any) {
     {
       name: 'Project',
       href: '/project',
-      icon: CubeIcon,
+      icon: CogIcon,
       is_active: false,
-      is_active_logic: ['^/project', '^/project/[a-zA-Z0-9]+'],
+      is_active_logic: ['^/project', '^/project/[a-zA-Z0-9]+']
     },
     {
       name: 'Container',
       href: '/container',
-      icon: CogIcon,
+      icon: CubeIcon,
       is_active: false,
-      is_active_logic: ['^/container', '^/container/[a-zA-Z0-9]+'],
+      is_active_logic: ['^/container', '^/container/[a-zA-Z0-9]+']
     },
     {
       name: 'Image',
       href: '/image',
       icon: CircleStackIcon,
       is_active: false,
-      is_active_logic: ['^/image'],
+      is_active_logic: ['^/image']
     },
     {
       name: 'Volume',
       href: '/volume',
       icon: ChartPieIcon,
       is_active: false,
-      is_active_logic: ['^/volume'],
+      is_active_logic: ['^/volume']
     },
     {
       name: 'Network',
       href: '/network',
       icon: ServerIcon,
       is_active: false,
-      is_active_logic: ['^/network'],
-    },
-  ];
+      is_active_logic: ['^/network']
+    }
+  ]
 
   const [navigation, setNavigation] = useState(initialNavigation)
 
@@ -242,10 +242,10 @@ export default function BaseLayout({children}: any) {
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
-          <div className="flex h-16 shrink-0 items-center">
-            <img className="h-14 w-14" src={theIcon} alt="dockman" />
-            <p className="ml-4 font-bold text-teal-800 text-xl">DockMan</p>
-          </div>
+            <div className="flex h-16 shrink-0 items-center">
+              <img className="h-14 w-14" src={theIcon} alt="dockman" />
+              <p className="ml-4 font-bold text-teal-800 text-xl">DockMan</p>
+            </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
