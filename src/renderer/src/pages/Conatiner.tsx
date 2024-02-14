@@ -13,6 +13,25 @@ function Container(): JSX.Element {
   const location = useLocation()
   const [containers, setContainers] = useState([] as any)
 
+  function getContainerStatusColor(status:string) {
+    switch (status) {
+      case 'running':
+        return 'text-teal-600'
+      case 'created':
+        return 'text-blue-500'
+      case 'restarting':
+        return 'text-yellow-500'
+      case 'paused':
+        return 'text-purple-500'
+      case 'exited':
+        return 'text-red-500'
+      case 'dead':
+        return 'text-gray-500'
+      default:
+        return 'text-gray-400'
+    }
+  }
+
   function getData(): void {
     http.get('/container').then((response) => {
       console.log(response.data.data)
@@ -107,11 +126,24 @@ function Container(): JSX.Element {
                       <span className="">{item.short.container_id}</span>
                     </p>
 
-                    <p
-                      className={`text-sm font-medium ${item.short.status === 'running' ? 'text-green-500' : 'text-gray-500'}`}
-                    >
-                      {item.short.status}
-                    </p>
+                    <div className="flex">
+                      <div
+                        className={classNames(
+                          getContainerStatusColor(item.short.status),
+                          'flex-none rounded-full p-1 mt-1'
+                        )}
+                      >
+                        <div className="h-1.5 w-1.5 rounded-full bg-current"></div>
+                      </div>
+                      <p
+                        className={classNames(
+                          getContainerStatusColor(item.short.status),
+                          'text-sm font-medium'
+                        )}
+                      >
+                        {item.short.status}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
