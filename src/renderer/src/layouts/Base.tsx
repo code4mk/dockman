@@ -241,7 +241,7 @@ export default function BaseLayout({children}: any) {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-gray-200 px-6 pb-4">
             <div className="flex h-16 shrink-0 items-center">
               <img className="h-14 w-14" src={theIcon} alt="dockman" />
               <p className="ml-4 font-bold text-teal-800 text-xl">DockMan</p>
@@ -256,7 +256,7 @@ export default function BaseLayout({children}: any) {
                           to={item.href}
                           className={classNames(
                             item.is_active
-                              ? 'bg-gray-50 text-teal-600'
+                              ? 'bg-white shadow text-teal-600'
                               : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50',
                             'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                           )}
@@ -324,7 +324,7 @@ export default function BaseLayout({children}: any) {
         </div>
 
         <div className="lg:pl-72">
-          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200  bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
             <button
               type="button"
               className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
@@ -395,8 +395,8 @@ export default function BaseLayout({children}: any) {
             </div>
           </div>
 
-          <main className="py-10">
-            <div className="px-4 sm:px-6 lg:px-8">{children}</div>
+          <main className="">
+            <div className="">{children}</div>
           </main>
         </div>
       </div>

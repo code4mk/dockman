@@ -26,6 +26,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
+    "ansi-to-react": "^6.1.6",
     "autoprefixer": "^10.4.17",
     "axios": "^1.6.7",
     "electron-updater": "^6.1.7",
@@ -60,5 +61,4 @@
       }
     ]
   }
-  
 }
