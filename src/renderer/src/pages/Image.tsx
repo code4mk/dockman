@@ -70,7 +70,7 @@ function Image(): JSX.Element {
               {images?.map((item) => (
                 <li
                   key={item.image_id}
-                  className="col-span-full flex bg-white px-2 py-2 shadow sm:rounded-lg sm:px-6 group "
+                  className="col-span-full flex bg-white px-1 py-1 shadow sm:rounded-lg sm:px-6 group "
                 >
                   <div
                     className={classNames(
@@ -88,7 +88,7 @@ function Image(): JSX.Element {
                     />
                   </div>
                   {/* Left side */}
-                  <div className="flex flex-1 items-center rounded-l-md">
+                  <div className="flex flex-1 items-center rounded-l-md ml-2">
                     <div className="flex-1 px-4 py-2 text-sm">
                       <div className="flex items-center">
                         <p className="font-medium text-md  text-gray-900 mr-2">{item.repository}</p>
