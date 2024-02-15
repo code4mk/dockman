@@ -6,6 +6,7 @@ import { CubeIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import AddContainerModal from '@components/container/AddContainerModal'
 import LogsContainerModal from '@components/container/LogsContainerModal'
+import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
 
 function classNames(...classes: string[]): string {
   return classes.filter(Boolean).join(' ')
@@ -172,8 +173,9 @@ function Container(): JSX.Element {
                           {item.short.image}
                         </div>
                       </div>
-                      <p className="text-gray-500">
+                      <p className="text-gray-500 flex">
                         <span className="">{item.short.container_id}</span>
+                        <CopyToClipboardButton textToCopy={item.short.container_id} />
                       </p>
 
                       <div className="flex">

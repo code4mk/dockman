@@ -4,6 +4,7 @@ import { http } from '@utils/http'
 import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
 import { CircleStackIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
+import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
 
 function classNames(...classes: string[]): string {
   return classes.filter(Boolean).join(' ')
@@ -106,8 +107,11 @@ function Image(): JSX.Element {
                           </p>
                         </div>
                       </div>
-                      <p className="text-gray-500">
+                      <p className="text-gray-500 flex">
                         <span className="">{item.image_id}</span>
+                        <span className="">
+                          <CopyToClipboardButton textToCopy={item.image_id} />
+                        </span>
                       </p>
 
                       <p
