@@ -66,7 +66,7 @@ function Image(): JSX.Element {
           <div className="mt-6">
             <ul
               role="list"
-              className="mt-1 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4"
+              className="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
             >
               {images?.map((item) => (
                 <li

@@ -1,9 +1,138 @@
 import BaseLayout from '@layouts/Base'
+import { useLocation } from 'react-router-dom'
+import { http } from '@utils/http'
+import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
+import { CircleStackIcon, ChartPieIcon } from '@heroicons/react/24/outline'
+import { useEffect, useState } from 'react'
+import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
+
+function classNames(...classes: string[]): string {
+  return classes.filter(Boolean).join(' ')
+}
 
 function Volume(): JSX.Element {
+  const location = useLocation()
+  const [volumes, setVolumes] = useState([] as any)
+
+  function getData(): void {
+    http.get('/volume').then((response) => {
+      console.log(response.data.data)
+      setVolumes(response.data?.data)
+    })
+  }
+
+  useEffect(() => {
+    getData()
+    // Fetch data every 10 seconds
+    const intervalId = setInterval(() => {
+      getData()
+    }, 10000000)
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId)
+  }, [location.pathname])
+
   return (
     <BaseLayout>
-      <p>volume</p>
+      <div className=" min-h-[90vh] bg-gray-100 px-4 ">
+        <div className="flex items-center justify-between mb-1">
+          {/* Left - Title */}
+          <div className="mt-5">
+            <h1 className="text-2xl font-bold">Volume List</h1>
+          </div>
+
+          {/* Middle - Filter */}
+          <div>
+            {/* Add your filter component here */}
+            {/* Example: <FilterComponent /> */}
+          </div>
+
+          {/* Right - Button */}
+          <div>
+            <div>
+              {/* <button
+              type="button"
+              className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              New Container
+              <CursorArrowRippleIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+            </button> */}
+            </div>
+          </div>
+        </div>
+
+        {/* Container List */}
+        <div>
+          <div className="mt-6">
+            <ul
+              role="list"
+              className="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
+            >
+              {volumes?.map((item) => (
+                <li
+                  key={item.image_id}
+                  className="col-span-full flex bg-white px-1 py-1 shadow sm:rounded-lg sm:px-6 group "
+                >
+                  <div
+                    className={classNames(
+                      ' flex w-8 flex-shrink-0 items-center justify-center rounded-l-md text-sm font-medium text-white'
+                    )}
+                  >
+                    <ChartPieIcon
+                      className={classNames(
+                        item.is_used_live ? 'text-teal-700' : 'text-gray-400',
+                        'h-10 w-10 shrink-0'
+                      )}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  {/* Left side */}
+                  <div className="flex flex-1 items-center rounded-l-md ml-2">
+                    <div className="flex-1 px-4 py-2 text-sm">
+                      <div className="flex items-center">
+                        <p className="font-medium text-md  text-gray-900 mr-2">{item.name}</p>
+                        <div className="bg-slate-100 px-2 py-1 text-xs font-normal text-slate-500 rounded-md">
+                          {item.driver}
+                        </div>
+                      </div>
+                      <p className="text-gray-500 flex">
+                        <span className="">
+                          {item.mount_point.slice(0, 40)} ***** {item.mount_point.slice(-12)}
+                        </span>
+                        <span className="">
+                          <CopyToClipboardButton textToCopy={item.name} />
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right side */}
+                  <div className="flex-shrink-0 flex items-center px-2  rounded-r-md ">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
+                    >
+                      <CursorArrowRippleIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
+                    >
+                      Inspect
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
+                    >
+                      Logs
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
     </BaseLayout>
   )
 }
