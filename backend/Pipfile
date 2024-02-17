@@ -9,9 +9,11 @@ flask-cors = "*"
 pyinstaller = "*"
 flask-sqlalchemy = "*"
 flask-migrate = "*"
-dock-craftsman = {file = "dock-craftsman", editable = true}
 humanize = "*"
 python-dateutil = "*"
+twine = "*"
+wheel = "*"
+dock-craftsman = "*"
 
 [dev-packages]
 

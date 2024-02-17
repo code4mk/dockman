@@ -3,9 +3,10 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { spawn, exec } from 'child_process'
-import { execFile, execSync } from 'child_process'
 
 let pythonProcess // Reference to the Python child process
+
+const the_backend_port: string = '5656'
 
 function createWindow(): void {
   console.log('Creating main window...')
@@ -53,11 +54,18 @@ function createWindow(): void {
   }
 
   if (is.dev) {
-    pythonProcess = spawn(`python ./backend/run.py 5656 --reload`, { detached: true, shell: true, stdio: 'inherit' })
+    pythonProcess = spawn(`python ./backend/run.py ${the_backend_port} true --reload`, {
+      detached: true,
+      shell: true,
+      stdio: 'inherit'
+    })
     console.log('Development mode: Python process started.')
   } else {
-    pythonProcess = execFile(runFlask, ['5656'])
-    console.log('Production mode: Backend is running on port 5656.')
+    spawn(runFlask, [the_backend_port, 'false'], {
+      detached: true,
+      stdio: 'ignore'
+    })
+    console.log(`Production mode: Backend is running on port ${the_backend_port}.`)
   }
 }
 
@@ -69,12 +77,12 @@ function shutdown(): void {
     console.log('Development mode: Python process killed.')
   } else {
     // Replace 5006 with the actual port used in production
-    const portToKill = 5656
+    const portToKill = the_backend_port
 
     // Execute the kill command
     const command = `kill -9 $(lsof -t -i:${portToKill})`
 
-    exec(command, (error, stdout, stderr) => {
+    exec(command, (error, stdout) => {
       if (error) {
         console.error('Production mode: Error killing process:', error.message)
       } else {
@@ -105,4 +113,3 @@ app.on('before-quit', () => {
   console.log('Before quit event. Initiating shutdown.')
   shutdown()
 })
-
