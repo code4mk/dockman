@@ -5,12 +5,10 @@ import icon from '../../resources/icon.png?asset'
 import { spawn, exec } from 'child_process'
 
 let pythonProcess // Reference to the Python child process
+let the_backend_port: string | number // Variable to store the dynamically allocated port
 
-const the_backend_port: string = '5656'
-
-function createWindow(): void {
+async function createWindow(): Promise<void> {
   console.log('Creating main window...')
-  console.log('path' + app.getAppPath())
 
   const runFlask: string = {
     darwin: '/Applications/dockman.app/Contents/Resources/kamal/dockman_server/dockman_server',
@@ -18,7 +16,12 @@ function createWindow(): void {
     win32: 'start ./resources/dockman_server/dockman_server.exe'
   }[process.platform]
 
-  // Create the browser window.
+  // Dynamically import the get-port module
+  const { default: getPort } = await import('get-port')
+
+  // Dynamically get an available port
+  the_backend_port = await getPort()
+
   const mainWindow = new BrowserWindow({
     width: 1050,
     height: 670,
@@ -34,6 +37,10 @@ function createWindow(): void {
     }
   })
 
+  mainWindow.webContents.once('dom-ready', () => {
+    mainWindow?.webContents?.send('backend-port', the_backend_port)
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -42,16 +49,9 @@ function createWindow(): void {
   mainWindow.on('ready-to-show', () => {
     console.log('Main window is ready to show.')
     mainWindow.show()
-    // mainWindow.webContents.openDevTools()
+    // Uncomment the line below to open DevTools in development mode
+    // mainWindow.webContents.openDevTools();
   })
-
-  // HMR for renderer based on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
 
   if (is.dev) {
     pythonProcess = spawn(`python ./backend/run.py ${the_backend_port} true --reload`, {
@@ -61,11 +61,17 @@ function createWindow(): void {
     })
     console.log('Development mode: Python process started.')
   } else {
-    spawn(runFlask, [the_backend_port, 'false'], {
+    spawn(runFlask, [the_backend_port.toString(), 'false'], {
       detached: true,
       stdio: 'ignore'
     })
     console.log(`Production mode: Backend is running on port ${the_backend_port}.`)
+  }
+
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  } else {
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
 
@@ -76,10 +82,7 @@ function shutdown(): void {
     pythonProcess.kill('SIGTERM')
     console.log('Development mode: Python process killed.')
   } else {
-    // Replace 5006 with the actual port used in production
     const portToKill = the_backend_port
-
-    // Execute the kill command
     const command = `kill -9 $(lsof -t -i:${portToKill})`
 
     exec(command, (error, stdout) => {
@@ -92,7 +95,7 @@ function shutdown(): void {
   }
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.electron')
 
   app.on('browser-window-created', (_, window) => {
@@ -102,7 +105,7 @@ app.whenReady().then(() => {
 
   ipcMain.on('ping', () => console.log('Received ping. Sending pong...'))
 
-  createWindow()
+  await createWindow()
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
