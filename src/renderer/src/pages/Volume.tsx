@@ -90,7 +90,7 @@ function Volume(): JSX.Element {
                   <div className="flex flex-1 items-center rounded-l-md ml-2">
                     <div className="flex-1 px-4 py-2 text-sm">
                       <div className="flex items-center">
-                        <p className="font-medium text-md  text-gray-900 mr-2">{item.name}</p>
+                        <p className="font-medium text-md  text-gray-900 mr-2">{item.name?.slice(0, 30)}******</p>
                         <div className="bg-slate-100 px-2 py-1 text-xs font-normal text-slate-500 rounded-md">
                           {item.driver}
                         </div>
