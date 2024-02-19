@@ -1,24 +1,27 @@
-from flask import Flask, g
-from flask_cors import CORS
-from backend.models import db
+from flask import Flask
+from config import Config
 from backend.views import project, container, image, volume, network
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+db = SQLAlchemy()
+migrate = Migrate()
+
 
 def create_app():
     app = Flask(__name__)
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # Initialize SQLAlchemy directly in app.py
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-
+    app.config.from_object(Config)
+    
     # Configure CORS
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     # Additional CORS headers (optional)
     app.config["CORS_HEADERS"] = "Content-Type"
+
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
 
     # Register blueprints (views)
     app.register_blueprint(project.bp, url_prefix='/project')
@@ -27,6 +30,4 @@ def create_app():
     app.register_blueprint(volume.bp, url_prefix='/volume')
     app.register_blueprint(network.bp, url_prefix='/the-network')
 
-
     return app
-
