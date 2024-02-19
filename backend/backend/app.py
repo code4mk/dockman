@@ -4,14 +4,22 @@ from backend.views import project, container, image, volume, network
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
-db = SQLAlchemy()
-migrate = Migrate()
-
+from backend.models import db
+# Get the home directory
+import os
+home_directory = os.path.expanduser("~")
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
+    # app.config.from_object(Config)
+    print(f'home:::{home_directory}')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(home_directory, 'dockman.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    # Initialize SQLAlchemy directly in app.py
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
     
     # Configure CORS
     CORS(app, resources={r"/*": {"origins": "*"}})
@@ -19,9 +27,6 @@ def create_app():
     # Additional CORS headers (optional)
     app.config["CORS_HEADERS"] = "Content-Type"
 
-    # Initialize extensions
-    db.init_app(app)
-    migrate.init_app(app, db)
 
     # Register blueprints (views)
     app.register_blueprint(project.bp, url_prefix='/project')
