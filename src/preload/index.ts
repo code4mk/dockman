@@ -1,8 +1,10 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+interface CustomAPI {
+  selectFolder: () => Promise<string | undefined>
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -10,7 +12,9 @@ const api = {}
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('api', {
+      selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>
+    } as CustomAPI)
   } catch (error) {
     console.error(error)
   }
@@ -18,5 +22,7 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electron = electronAPI
   // @ts-ignore (define in dts)
-  window.api = api
+  window.api = {
+    selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>
+  } as CustomAPI
 }

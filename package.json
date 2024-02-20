@@ -24,6 +24,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
+    "@electron/remote": "^2.1.2",
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.1",
     "ansi-to-react": "^6.1.6",
