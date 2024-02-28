@@ -7,17 +7,17 @@ bp = Blueprint('project', __name__)
 @bp.route('/create', methods=['POST'])
 def create_project():
     # Extract data from form-data
-    name = request.form.get('name')
+    name = request.form.get('project_name')
     project_path = request.form.get('project_path')
-    template_name = request.form.get('template_name')
-    dockerfile_path = request.form.get('dockerfile_path')
+    # template_name = request.form.get('template_name')
+    # dockerfile_path = request.form.get('dockerfile_path')
 
     # Create a new Project instance
     new_project = Project(
         name=name,
         project_path=project_path,
-        template_name=template_name,
-        dockerfile_path=dockerfile_path
+        # template_name=template_name,
+        # dockerfile_path=dockerfile_path
     )
 
     # Add the new project to the database
@@ -34,8 +34,8 @@ def create_project():
             'project_id': added_project.id,
             'name': added_project.name,
             'project_path': added_project.project_path,
-            'template_name': added_project.template_name,
-            'dockerfile_path': added_project.dockerfile_path
+            # 'template_name': added_project.template_name,
+            # 'dockerfile_path': added_project.dockerfile_path
         })
     else:
         # Failed to add the project
@@ -47,7 +47,7 @@ def get_all_projects():
     project_list = [{'id': project.id, 'name': project.name, 'project_path': project.project_path,
                      'template_name': project.template_name, 'dockerfile_path': project.dockerfile_path}
                     for project in projects]
-    return jsonify({'projects': project_list})
+    return jsonify({'data': project_list})
 
 @bp.route('/get/<int:project_id>', methods=['GET'])
 def get_single_project(project_id):
