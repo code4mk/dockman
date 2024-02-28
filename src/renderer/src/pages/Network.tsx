@@ -2,7 +2,7 @@ import BaseLayout from '@layouts/Base'
 import { useLocation } from 'react-router-dom'
 import { http } from '@utils/http'
 import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
-import { ServerIcon, ChartPieIcon } from '@heroicons/react/24/outline'
+import { ServerIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
 
