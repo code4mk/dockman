@@ -2,7 +2,7 @@ import BaseLayout from '@layouts/Base'
 import { useLocation } from 'react-router-dom'
 import { http } from '@utils/http'
 import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
-import { CircleStackIcon, ChartPieIcon } from '@heroicons/react/24/outline'
+import { ServerIcon, ChartPieIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
 
@@ -78,9 +78,9 @@ function Network(): JSX.Element {
                       ' flex w-8 flex-shrink-0 items-center justify-center rounded-l-md text-sm font-medium text-white'
                     )}
                   >
-                    <ChartPieIcon
+                    <ServerIcon
                       className={classNames(
-                        true ? 'text-teal-700' : 'text-gray-400',
+                        item?.id ? 'text-teal-700' : 'text-gray-400',
                         'h-10 w-10 shrink-0'
                       )}
                       aria-hidden="true"
