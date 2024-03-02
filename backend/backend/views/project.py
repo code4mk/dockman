@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, g
 from backend.models import db
-from backend.models.project import Project
+from backend.models.project import Project, ProjectDockerfile
 
 bp = Blueprint('project', __name__)
 
@@ -91,3 +91,70 @@ def delete_project(project_id):
     db.session.commit()
 
     return jsonify({'message': 'Project deleted successfully'})
+
+
+@bp.route('/create-dockerfile', methods=['POST'])
+def create_project_dockerfile():
+    # Extract data from form-data
+    project_id = request.form.get('project_id')
+    method = request.form.get('method')
+    title = request.form.get('title')
+    data = request.form.get('data')
+    stage = request.form.get('stage')
+
+    # Validate that all required data is provided
+    if not all([project_id, method, title, data, stage]):
+        return jsonify({'message': 'Incomplete data provided'}), 400
+
+    # Create a new ProjectDockerfile instance
+    new_project_dockerfile = ProjectDockerfile(
+        project_id=project_id,
+        method=method,
+        title=title,
+        data=data,
+        stage=stage
+    )
+
+    # Add the new project dockerfile to the database
+    db.session.add(new_project_dockerfile)
+    db.session.commit()
+
+    # Query the database to check if the data has been added
+    added_dockerfile = ProjectDockerfile.query.filter_by(project_id=project_id, stage=stage, method=method).first()
+
+    if added_dockerfile:
+        # Dockerfile has been added successfully
+        return jsonify({
+            'message': 'Dockerfile item created successfully',
+            'dockerfile_id': added_dockerfile.id,
+            'project_id': added_dockerfile.project_id,
+            'method': added_dockerfile.method,
+            'title': added_dockerfile.title,
+            'data': added_dockerfile.data,
+            'stage': added_dockerfile.stage
+        })
+    else:
+        # Failed to add the dockerfile
+        return jsonify({'message': 'Failed to add the dockerfile item'}), 500
+
+
+from itertools import groupby
+
+@bp.route('/get-all-dockerfiles/<int:project_id>', methods=['GET'])
+def get_all_dockerfiles(project_id):
+    dockerfiles = ProjectDockerfile.query.filter_by(project_id=project_id).all()
+
+    # Sort the dockerfiles by stage
+    dockerfiles.sort(key=lambda x: x.stage)
+
+    # Group the dockerfiles by stage
+    grouped_dockerfiles = {key: list(group) for key, group in groupby(dockerfiles, key=lambda x: x.stage)}
+
+    # Convert the grouped data to a list of dictionaries
+    dockerfile_list = [{'stage': stage, 'dockerfiles': [{'id': dockerfile.id, 'project_id': dockerfile.project_id,
+                                                           'method': dockerfile.method, 'title': dockerfile.title,
+                                                           'data': dockerfile.data, 'stage': dockerfile.stage}
+                                                          for dockerfile in dockerfiles]}
+                       for stage, dockerfiles in grouped_dockerfiles.items()]
+
+    return jsonify({'data': dockerfile_list})

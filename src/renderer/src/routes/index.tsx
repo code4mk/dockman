@@ -7,6 +7,7 @@ import Volume from '@pages/Volume'
 import Image from '@pages/Image'
 import Network from '@pages/Network'
 import Project from '@pages/Project'
+import ProjectDetails from '@pages/ProjectDetails'
 
 const router = createHashRouter([
   {
@@ -20,6 +21,10 @@ const router = createHashRouter([
   {
     path: 'project',
     element: <Project />
+  },
+  {
+    path: 'project/:projectId',
+    element: <ProjectDetails />
   },
   {
     path: 'container',

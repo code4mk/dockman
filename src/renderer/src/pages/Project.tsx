@@ -3,6 +3,7 @@ import { http } from '@utils/http'
 import { useEffect, useState } from 'react'
 import { CogIcon } from '@heroicons/react/24/outline'
 import AddProjectModal from '@components/project/AddProjectModal'
+import { useNavigate } from 'react-router-dom'
 
 function classNames(...classes: string[]): string {
   return classes.filter(Boolean).join(' ')
@@ -10,6 +11,7 @@ function classNames(...classes: string[]): string {
 
 function Project(): JSX.Element {
   const [projects, setProjects] = useState([] as any)
+  const navigate = useNavigate()
 
   useEffect(() => {
     getData()
@@ -42,6 +44,11 @@ function Project(): JSX.Element {
       ...prevData,
       addProjectModal: true
     }))
+  }
+
+  function changeRouter(item: any): void {
+    console.log(item)
+    navigate(`/project/${item.id}`)
   }
 
   return (
@@ -93,7 +100,8 @@ function Project(): JSX.Element {
                 //   className="col-span-2 flex bg-white shadow sm:rounded-lg h-[80px] hover:bg-teal-50 cursor-pointer "
                 // >
                 <li
-                  key={item.image_id}
+                  onClick={() => changeRouter(item)}
+                  key={item.id}
                   className="col-span-2 flex bg-white px-1 py-1 shadow sm:rounded-lg sm:px-6 group h-[70px] hover:border-[1px] border-[1px] border-transparent hover:border-teal-400 cursor-pointer "
                 >
                   <div

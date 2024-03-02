@@ -12,7 +12,60 @@ interface AddModalProps {
   onDataFetch: () => void
 }
 
-function AddProjectModal({
+const dockerfileMethods = [
+  {
+    name: 'stage',
+    title: 'Build Stage'
+  },
+  {
+    name: 'from_',
+    title: 'Base Image',
+    sample: 'python:3.11.6-slim'
+  },
+  {
+    name: 'run',
+    title: 'Run Command'
+  },
+  {
+    name: 'apt_install',
+    title: 'APT Install'
+  },
+  {
+    name: 'workdir',
+    title: 'Working Directory',
+    sample: '/var/www/app'
+  },
+  {
+    name: 'copy',
+    title: 'Copy Files'
+  },
+  {
+    name: 'env',
+    title: 'Environment Variable'
+  },
+  {
+    name: 'arg',
+    title: 'Build Argument'
+  },
+  {
+    name: 'label',
+    title: 'Label'
+  },
+  {
+    name: 'user',
+    title: 'Set User'
+  },
+  {
+    name: 'expose',
+    title: 'Expose Port'
+  },
+  {
+    name: 'cmd',
+    title: 'Default Command'
+  }
+]
+
+function DockerfileGenerateModal({
   modalName,
   modalData,
   onModalClose,
@@ -23,27 +76,34 @@ function AddProjectModal({
   const [openModal, setOpenModal] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [projectPath, setProjectPath] = useState('')
+  const [dockerFileMethod, setDockerFileMethod] = useState('' as any)
+  const [theData, setTheData] = useState('')
+  const [theTitle, setTheTitle] = useState('')
 
   useEffect(() => {
-    if (modalName === 'addProjectModal') {
+    if (modalName === 'dockerfileGenerateModal') {
       setProjectName('')
       setProjectPath('')
+      setDockerFileMethod('')
       setOpenModal(modalStatus)
     }
   }, [modalData, setOpenModal, modalStatus])
 
   function modalClose(): void {
     onModalClose({
-      modalName: 'addProjectModal'
+      modalName: 'dockerfileGenerateModal'
     })
   }
 
   function addNewProject(): void {
     const formData = new FormData()
-    formData.append('project_name', projectName)
-    formData.append('project_path', projectPath)
+    formData.append('project_id', '1')
+    formData.append('stage', 'dockman')
+    formData.append('method', dockerFileMethod.name)
+    formData.append('title', theTitle)
+    formData.append('data', theData)
 
-    http.post('/project/create', formData).then((response: any) => {
+    http.post('/project/create-dockerfile', formData).then((response: any) => {
       modalClose()
       onDataFetch()
     })
@@ -88,7 +148,7 @@ function AddProjectModal({
             >
               <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 max-w-md">
                 <div className="flex justify-between items-center mb-4">
-                  <div className="text-xl font-bold text-gray-800">Add New Project</div>
+                  <div className="text-xl font-bold text-gray-800">Add Dockerfile Item</div>
                   <button
                     type="button"
                     className="
@@ -101,59 +161,71 @@ function AddProjectModal({
                     <XMarkIcon className="h-5 w-5" />
                   </button>
                 </div>
-
-                <div className="text-center sm:mt-1">
-                  <div className="">
-                    <div className="text-sm text-gray-500 py-8">
-                      <div className="mb-4">
-                        <label
-                          htmlFor="content-name"
-                          className="mb-2 text-left block text-sm font-medium text-gray-700"
-                        >
-                          Name <span className="text-red-600">*</span>
-                        </label>
-                        <input
-                          required={true}
-                          type="text"
-                          className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                          value={projectName}
-                          onInput={(event: any) => setProjectName(event.target.value)}
-                          placeholder="Your project name"
-                        />
+                {dockerFileMethod === '' && (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {dockerfileMethods.map((method) => (
+                      <div
+                        key={method.name}
+                        onClick={() => setDockerFileMethod(method)}
+                        className="relative flex flex-col space-y-3 rounded-lg border border-gray-300 bg-white px-2 py-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-teal-400 cursor-pointer"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="focus:outline-none">
+                            <span className="absolute inset-0" aria-hidden="true" />
+                            <p className="text-sm font-medium text-gray-900">{method.name}</p>
+                            <div className="text-sm text-gray-500 mt-2">
+                              <p className="font-medium">{method.title}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="mb-4">
-                        <label
-                          htmlFor="content-name"
-                          className="mb-2 text-left block text-sm font-medium text-gray-700"
-                        >
-                          Path <span className="text-red-600">*</span>
-                        </label>
-                        <div className="flex">
+                    ))}
+                  </div>
+                )}
+
+                {dockerFileMethod !== '' && (
+                  <div className="sm:mt-1">
+                    <div className="text-sm mt-1">
+                      <p className="font-medium bg-gray-200 px-4 py-2 rounded">{dockerFileMethod.name}</p>
+                    </div>
+                    <div className="text-center ">
+                      <div className="text-sm text-gray-500 py-8">
+                        <div className="mb-4">
+                          <label
+                            htmlFor="content-name"
+                            className="mb-2 text-left block text-sm font-medium text-gray-700"
+                          >
+                            Title<span className="text-gray-300">(optional)</span>
+                          </label>
                           <input
                             type="text"
-                            disabled={false}
-                            className="flex-1 block w-full border  border-gray-300 rounded-tl-md rounded-bl-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                            // className="py-3 px-4 block w-full border-gray-300 shadow-sm rounded-s-lg text-sm focus:z-10 focus:border-teal-500 focus:ring-teal-500   dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
-                            value={projectPath}
-                            onInput={(event: any) => {console.log("")}}
-                            placeholder="Pick your project"
+                            className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                            value={theTitle}
+                            onInput={(event: any) => setTheTitle(event.target.value)}
+                            placeholder="Add your desired title"
                           />
-                          <button
-                            type="button"
-                            className="py-2 px-3 flex-shrink-0 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-e-md border border-transparent bg-gray-300 text-white hover:bg-gray-400 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                            onClick={() => {
-                              window?.api.selectFolder().then((response) => {
-                                setProjectPath(response)
-                              })
-                            }}
+                        </div>
+
+                        <div className="mb-4">
+                          <label
+                            htmlFor="content-name"
+                            className="mb-2 text-left block text-sm font-medium text-gray-700"
                           >
-                            <FolderIcon className="flex-shrink-0 size-4" />
-                          </button>
+                            Data <span className="text-red-600">(required)</span>
+                          </label>
+                          <textarea
+                            rows={3}
+                            className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                            value={theData}
+                            onInput={(event: any) => setTheData(event.target.value)}
+                            placeholder={dockerFileMethod?.sample ?? ''}
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
+
                 <div className="flex justify-end mt-4">
                   <button
                     type="button"
@@ -184,4 +256,4 @@ function AddProjectModal({
   )
 }
 
-export default AddProjectModal
+export default DockerfileGenerateModal
