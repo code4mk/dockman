@@ -4,38 +4,43 @@ import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal
 import { useState, useEffect } from 'react'
 
 function ProjectDetails(): JSX.Element {
-  const [allDockerfiles, setAllDockerfiles] = useState([] as any)
+  const [allDockerfiles, setAllDockerfiles] = useState([])
+  const [modals, setModals] = useState({
+    dockerfileGenerateModal: false
+  })
 
-  function getData(): void {
-    http.get('/project/get-all-dockerfiles/1').then((response) => {
-      console.log(response.data)
-      setAllDockerfiles(response.data?.data)
-    })
+  const getData = (): void => {
+    http
+      .get('/project/get-all-dockerfiles/1')
+      .then((response) => {
+        console.log(response.data)
+        setAllDockerfiles(response.data?.data)
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error)
+        // Add error handling logic here
+      })
   }
 
   useEffect(() => {
     getData()
   }, [])
 
-  const [modals, setModals] = useState({
-    dockerfileGenerateModal: false
-  })
-
-  function handleModalClose(data: any): void {
+  const handleModalClose = (data: any): void => {
     setModals((prevState) => ({
       ...prevState,
       [data.modalName]: false
     }))
   }
 
-  function openDockerFileModal(): void {
+  const openDockerFileModal = (): void => {
     setModals((prevData) => ({
       ...prevData,
       dockerfileGenerateModal: true
     }))
   }
 
-  function handleDataFetch(): void {
+  const handleDataFetch = (): void => {
     getData()
   }
 
@@ -47,35 +52,59 @@ function ProjectDetails(): JSX.Element {
         onModalClose={handleModalClose}
         onDataFetch={handleDataFetch}
       />
-      <p className="text-xl font-bold mb-4">Project Details</p>
-      <div className="flex">
-        <div className="w-1/2">
-          {allDockerfiles?.map((stageItem) => (
-            <div key={stageItem.stage}>
-              <p className="text-lg font-bold mb-2">{stageItem.stage}</p>
-              <table className="min-w-full bg-white border border-gray-300 mb-4">
-                <thead className="bg-gray-800 text-white">
-                  <tr>
-                    <th className="py-2 px-4">Method</th>
-                    <th className="py-2 px-4">Data</th>
-                  </tr>
-                </thead>
-                <tbody>
+
+      <div className="flex min-h-[90vh] bg-gray-100 px-4 flex-col">
+        <p className="w-full text-xl font-bold mb-4">Project Details</p>
+        <div>
+          <button
+            type="button"
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={() => openDockerFileModal()}
+          >
+            Add Item
+          </button>
+        </div>
+        <div className="flex w-full mt-2">
+          <div className="w-1/2 pr-2">
+            {allDockerfiles?.map((stageItem: any) => (
+              <div key={stageItem.stage} className="mb-4">
+                <p className="text-md font-bold mb-2">{stageItem.stage}</p>
+                <div className="flex flex-col">
                   {stageItem.dockerfiles.map((dockerfile) => (
-                    <tr key={dockerfile.id} className="hover:bg-gray-100">
-                      <td className="py-2 px-4">{dockerfile.method}</td>
-                      <td className="py-2 px-4">{dockerfile.data}</td>
-                    </tr>
+                    <div
+                      key={dockerfile.id}
+                      className="flex bg-white border cursor-move mb-2 w-full"
+                    >
+                      <div className="py-2 px-4 flex-1">{dockerfile.method}</div>
+                      <div className="py-2 px-4 flex-2 ">{dockerfile.data}</div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          ))}
+                  <div className="flex justify-end mb-2">
+                    <button
+                      className="cursor-pointer border border-dotted border-red-500 px-2 py-1 rounded-md"
+                      onClick={() => openDockerFileModal()}
+                    >
+                      add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="w-1/2 pl-2 mt-8">
+            <textarea
+              disabled={true}
+              rows={25}
+              className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              value={JSON.stringify(allDockerfiles, null, 2)}
+              onInput={(event: any) => console.log('')}
+              placeholder={''}
+            />
+          </div>
         </div>
       </div>
-      <p className="mt-4 cursor-pointer text-blue-500" onClick={() => openDockerFileModal()}>Open DockerFile Modal</p>
     </BaseLayout>
   )
 }
 
-export default ProjectDetails;
+export default ProjectDetails
