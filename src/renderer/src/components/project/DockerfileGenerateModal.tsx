@@ -101,13 +101,19 @@ function DockerfileGenerateModal({
     formData.append('stage', 'dockman')
     formData.append('method', dockerFileMethod.name)
     formData.append('title', theTitle)
-    formData.append('data', theData)
+
+    if (dockerFileMethod.name === 'env') {
+      formData.append('data', JSON.stringify(theEnvData))
+    } else {
+      formData.append('data', JSON.stringify(theData))
+    }
 
     http.post('/project/create-dockerfile', formData).then((response: any) => {
       modalClose()
       onDataFetch()
     })
   }
+  const [theEnvData, setEnvData] = useState([{ key: '', value: '' }])
 
   return (
     <>
@@ -186,7 +192,9 @@ function DockerfileGenerateModal({
                 {dockerFileMethod !== '' && (
                   <div className="sm:mt-1">
                     <div className="text-sm mt-1">
-                      <p className="font-medium bg-gray-200 px-4 py-2 rounded">{dockerFileMethod.name}</p>
+                      <p className="font-medium bg-gray-200 px-4 py-2 rounded">
+                        {dockerFileMethod.name}
+                      </p>
                     </div>
                     <div className="text-center ">
                       <div className="text-sm text-gray-500 py-8">
@@ -205,22 +213,75 @@ function DockerfileGenerateModal({
                             placeholder="Add your desired title"
                           />
                         </div>
-
-                        <div className="mb-4">
-                          <label
-                            htmlFor="content-name"
-                            className="mb-2 text-left block text-sm font-medium text-gray-700"
-                          >
-                            Data <span className="text-red-600">(required)</span>
-                          </label>
-                          <textarea
-                            rows={3}
-                            className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                            value={theData}
-                            onInput={(event: any) => setTheData(event.target.value)}
-                            placeholder={dockerFileMethod?.sample ?? ''}
-                          />
-                        </div>
+                        <>
+                          {dockerFileMethod?.name === 'env' && (
+                            <div>
+                              {theEnvData.map((env, index) => (
+                                <div key={index} className="flex items-center space-x-2 mb-2">
+                                  <input
+                                    type="text"
+                                    className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                                    placeholder="Key"
+                                    value={env.key}
+                                    onChange={(event) => {
+                                      const updatedEnvData = [...theEnvData]
+                                      updatedEnvData[index].key = event.target.value
+                                      setEnvData(updatedEnvData)
+                                    }}
+                                  />
+                                  <input
+                                    type="text"
+                                    className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                                    placeholder="Value"
+                                    value={env.value}
+                                    onChange={(event) => {
+                                      const updatedEnvData = [...theEnvData]
+                                      updatedEnvData[index].value = event.target.value
+                                      setEnvData(updatedEnvData)
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    className="text-red-600 focus:outline-none"
+                                    onClick={() => {
+                                      const updatedEnvData = [...theEnvData]
+                                      updatedEnvData.splice(index, 1)
+                                      setEnvData(updatedEnvData)
+                                    }}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                type="button"
+                                className="text-teal-500 underline"
+                                onClick={() => setEnvData([...theEnvData, { key: '', value: '' }])}
+                              >
+                                Add Another
+                              </button>
+                            </div>
+                          )}
+                        </>
+                        <>
+                          {dockerFileMethod?.name !== 'env' && (
+                            <div className="mb-4">
+                              <label
+                                htmlFor="content-name"
+                                className="mb-2 text-left block text-sm font-medium text-gray-700"
+                              >
+                                Data <span className="text-red-600">(required)</span>
+                              </label>
+                              <textarea
+                                rows={3}
+                                className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                                value={theData}
+                                onInput={(event: any) => setTheData(event.target.value)}
+                                placeholder={dockerFileMethod?.sample ?? ''}
+                              />
+                            </div>
+                          )}
+                        </>
                       </div>
                     </div>
                   </div>

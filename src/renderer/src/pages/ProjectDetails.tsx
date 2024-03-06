@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 
 function ProjectDetails(): JSX.Element {
   const [allDockerfiles, setAllDockerfiles] = useState([])
+  const [theDoc, setTheDoc] = useState('')
   const [modals, setModals] = useState({
     dockerfileGenerateModal: false
   })
@@ -15,6 +16,9 @@ function ProjectDetails(): JSX.Element {
       .then((response) => {
         console.log(response.data)
         setAllDockerfiles(response.data?.data)
+        http.get('/project/the-dockerfile/1').then((res) => {
+          setTheDoc(res.data.data)
+        })
       })
       .catch((error) => {
         console.error('Error fetching data:', error)
@@ -76,7 +80,7 @@ function ProjectDetails(): JSX.Element {
                       className="flex bg-white border cursor-move mb-2 w-full"
                     >
                       <div className="py-2 px-4 flex-1">{dockerfile.method}</div>
-                      <div className="py-2 px-4 flex-2 ">{dockerfile.data}</div>
+                      <div className="py-2 px-4 flex-2 ">{ typeof dockerfile.data == 'string' ? dockerfile.data : JSON.stringify(dockerfile.data)}</div>
                     </div>
                   ))}
                   <div className="flex justify-end mb-2">
@@ -93,10 +97,10 @@ function ProjectDetails(): JSX.Element {
           </div>
           <div className="w-1/2 pl-2 mt-8">
             <textarea
-              disabled={true}
+              disabled={false}
               rows={25}
               className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-              value={JSON.stringify(allDockerfiles, null, 2)}
+              value={theDoc}
               onInput={(event: any) => console.log('')}
               placeholder={''}
             />

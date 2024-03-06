@@ -153,11 +153,11 @@
         },
         "dock-craftsman": {
             "hashes": [
-                "sha256:30b9aa0e0234c8f5a22b442eda51cf65bcf8db135af34d341497fd668834ad60",
-                "sha256:7a8152afa4a05c726b8d7988b3b7def356e539c7cf7e1b840059847bb70b9e93"
+                "sha256:700ecd5b598226b0c1a796ca8e38a79e852a838a37fde0565380118ff5e3d7ac",
+                "sha256:c703628f5f4a7ec0b7de66efab0a6d3e02867575be56a09c35f68114b6a41774"
             ],
             "index": "pypi",
-            "version": "==0.0.11"
+            "version": "==0.0.12"
         },
         "docker": {
             "hashes": [
@@ -584,11 +584,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:051d961ad0c62a94e50ecf1af379c3aba230c66c710493493560c0c223c49f20",
-                "sha256:ce3711610ddce217e6d113a2732fafad960a03fd0318c91faa79481e35c11224"
+                "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d",
+                "sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.2.0"
+            "version": "==2.2.1"
         },
         "werkzeug": {
             "hashes": [
