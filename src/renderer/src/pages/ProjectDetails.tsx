@@ -3,6 +3,7 @@ import { http } from '@utils/http/index'
 import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 function ProjectDetails(): JSX.Element {
   const navigate = useNavigate()
@@ -68,18 +69,11 @@ function ProjectDetails(): JSX.Element {
 
       <div className="flex min-h-[90vh] bg-gray-100 px-4 flex-col">
         <div className="mb-4">
-          <p className="cursor-pointer text-gray-600 text-sm" onClick={() => navigate(`/project`)}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 inline-block mr-1.5 text-gray-500"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M11 18a1 1 0 0 1-1-1v-3H4a1 1 0 1 1 0-2h6V4a1 1 0 1 1 2 0v8h6a1 1 0 1 1 0 2h-6v3a1 1 0 0 1-1 1z"
-              />
-            </svg>
+          <p
+            className="flex cursor-pointer text-gray-600 text-sm"
+            onClick={() => navigate(`/project`)}
+          >
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
             Back
           </p>
         </div>
@@ -103,61 +97,63 @@ function ProjectDetails(): JSX.Element {
           <p>build image</p>
         </div>
         <div>
-          <button
-            type="button"
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={() => openDockerFileModal()}
-          >
-            Add New Stage
-          </button>
-          <button
-            type="button"
-            className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={() => ''}
-          >
-            Save File
-          </button>
-        </div>
-        <div className="flex w-full mt-2">
-          <div className="w-1/2 pr-2">
-            {allDockerfiles?.map((stageItem: any) => (
-              <div key={stageItem.stage} className="mb-4">
-                <p className="text-md font-bold mb-2">{stageItem.stage}</p>
-                <div className="flex flex-col">
-                  {stageItem.dockerfiles.map((dockerfile) => (
-                    <div
-                      key={dockerfile.id}
-                      className="flex bg-white border cursor-move mb-2 w-full"
-                    >
-                      <div className="py-2 px-4 flex-1">{dockerfile.method}</div>
-                      <div className="py-2 px-4 flex-2 ">
-                        {typeof dockerfile.data === 'string'
-                          ? dockerfile.data
-                          : JSON.stringify(dockerfile.data)}
+          <div>
+            <button
+              type="button"
+              className="inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              onClick={() => openDockerFileModal()}
+            >
+              Add New Stage
+            </button>
+            <button
+              type="button"
+              className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              onClick={() => ''}
+            >
+              Save File
+            </button>
+          </div>
+          <div className="flex w-full mt-2">
+            <div className="w-1/2 pr-2">
+              {allDockerfiles?.map((stageItem: any) => (
+                <div key={stageItem.stage} className="mb-4">
+                  <p className="text-md font-bold mb-2">{stageItem.stage}</p>
+                  <div className="flex flex-col">
+                    {stageItem.dockerfiles.map((dockerfile) => (
+                      <div
+                        key={dockerfile.id}
+                        className="flex bg-white border cursor-move mb-2 w-full"
+                      >
+                        <div className="py-2 px-4 flex-1">{dockerfile.method}</div>
+                        <div className="py-2 px-4 flex-2 ">
+                          {typeof dockerfile.data === 'string'
+                            ? dockerfile.data
+                            : JSON.stringify(dockerfile.data)}
+                        </div>
                       </div>
+                    ))}
+                    <div className="flex justify-end mb-2">
+                      <button
+                        className="cursor-pointer border border-dotted border-red-500 px-2 py-1 rounded-md"
+                        onClick={() => openDockerFileModal()}
+                      >
+                        Add
+                      </button>
                     </div>
-                  ))}
-                  <div className="flex justify-end mb-2">
-                    <button
-                      className="cursor-pointer border border-dotted border-red-500 px-2 py-1 rounded-md"
-                      onClick={() => openDockerFileModal()}
-                    >
-                      Add
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="w-1/2 pl-2 mt-8">
-            <textarea
-              disabled={false}
-              rows={25}
-              className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-              value={theDoc}
-              onInput={(event: any) => console.log('')}
-              placeholder={''}
-            />
+              ))}
+            </div>
+            <div className="w-1/2 pl-2 mt-8">
+              <textarea
+                disabled={false}
+                rows={25}
+                className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                value={theDoc}
+                onInput={(event: any) => console.log('')}
+                placeholder={''}
+              />
+            </div>
           </div>
         </div>
       </div>
