@@ -67,23 +67,23 @@ function ProjectDetails(): JSX.Element {
         onDataFetch={handleDataFetch}
       />
 
-      <div className="flex min-h-[90vh] bg-gray-100 px-4 flex-col">
+      <div className="flex min-h-[90vh] bg-gray-100 p-4 flex-col">
         <div className="mb-4">
           <p
-            className="flex cursor-pointer text-gray-600 text-sm"
+            className="flex cursor-pointer text-teal-500 text-sm items-center"
             onClick={() => navigate(`/project`)}
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
             Back
           </p>
         </div>
-        <div className="mb-6 border-b-2 border-t-2 border-t-gray-400 border-b-gray-400">
-          <p className="text-lg font-bold">Project Details</p>
-          <p>project: {theProjectData?.name}</p>
-          <p>
-            path:{' '}
+        <div className="mb-6 border-b-2 border-t-2 border-teal-500">
+          <p className="text-2xl font-bold mb-2">Project Details</p>
+          <p className="text-lg">Name: {theProjectData?.name}</p>
+          <p className="text-lg">
+            Path:{' '}
             <span
-              className="cursor-pointer text-teal-500"
+              className="cursor-pointer underline"
               onClick={() => window?.api.openFinder(theProjectData?.project_path)}
             >
               {theProjectData?.project_path}
@@ -100,14 +100,14 @@ function ProjectDetails(): JSX.Element {
           <div>
             <button
               type="button"
-              className="inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               onClick={() => openDockerFileModal()}
             >
               Add New Stage
             </button>
             <button
               type="button"
-              className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-blue-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               onClick={() => ''}
             >
               Save File
@@ -134,7 +134,7 @@ function ProjectDetails(): JSX.Element {
                     ))}
                     <div className="flex justify-end mb-2">
                       <button
-                        className="cursor-pointer border border-dotted border-red-500 px-2 py-1 rounded-md"
+                        className="cursor-pointer border border-dotted border-red-500 px-2 py-1 rounded-md bg-teal-500 text-white"
                         onClick={() => openDockerFileModal()}
                       >
                         Add
