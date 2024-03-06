@@ -47,7 +47,6 @@ function Project(): JSX.Element {
   }
 
   function changeRouter(item: any): void {
-    console.log(item)
     navigate(`/project/${item.id}`)
   }
 

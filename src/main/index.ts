@@ -48,6 +48,10 @@ async function createWindow(): Promise<void> {
     }
   })
 
+  ipcMain.handle('openFinder', (event, folderPath) => {
+    shell.openPath(folderPath)
+  })
+
   mainWindow.webContents.once('dom-ready', () => {
     mainWindow?.webContents?.send('backend-port', the_backend_port)
   })

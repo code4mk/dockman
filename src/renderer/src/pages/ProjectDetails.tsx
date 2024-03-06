@@ -2,19 +2,27 @@ import BaseLayout from '@layouts/Base'
 import { http } from '@utils/http/index'
 import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal'
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function ProjectDetails(): JSX.Element {
+  const navigate = useNavigate()
   const [allDockerfiles, setAllDockerfiles] = useState([])
   const [theDoc, setTheDoc] = useState('')
+  const [theProjectData, setTheProjectData] = useState({} as any)
   const [modals, setModals] = useState({
     dockerfileGenerateModal: false
   })
+
+  function getProjectData(id: string | number): void {
+    http.get(`/project/get/${id}`).then((response) => {
+      setTheProjectData(response.data.project)
+    })
+  }
 
   const getData = (): void => {
     http
       .get('/project/get-all-dockerfiles/1')
       .then((response) => {
-        console.log(response.data)
         setAllDockerfiles(response.data?.data)
         http.get('/project/the-dockerfile/1').then((res) => {
           setTheDoc(res.data.data)
@@ -28,6 +36,7 @@ function ProjectDetails(): JSX.Element {
 
   useEffect(() => {
     getData()
+    getProjectData(1)
   }, [])
 
   const handleModalClose = (data: any): void => {
@@ -58,14 +67,55 @@ function ProjectDetails(): JSX.Element {
       />
 
       <div className="flex min-h-[90vh] bg-gray-100 px-4 flex-col">
-        <p className="w-full text-xl font-bold mb-4">Project Details</p>
+        <div className="mb-4">
+          <p className="cursor-pointer text-gray-600 text-sm" onClick={() => navigate(`/project`)}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 inline-block mr-1.5 text-gray-500"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M11 18a1 1 0 0 1-1-1v-3H4a1 1 0 1 1 0-2h6V4a1 1 0 1 1 2 0v8h6a1 1 0 1 1 0 2h-6v3a1 1 0 0 1-1 1z"
+              />
+            </svg>
+            Back
+          </p>
+        </div>
+        <div className="mb-6 border-b-2 border-t-2 border-t-gray-400 border-b-gray-400">
+          <p className="text-lg font-bold">Project Details</p>
+          <p>project: {theProjectData?.name}</p>
+          <p>
+            path:{' '}
+            <span
+              className="cursor-pointer text-teal-500"
+              onClick={() => window?.api.openFinder(theProjectData?.project_path)}
+            >
+              {theProjectData?.project_path}
+            </span>
+          </p>
+        </div>
+        <div className="mb-2 flex gap-2">
+          <p>dockerfile</p>
+          <p>nginx</p>
+          <p>supervisord</p>
+          <p>build image</p>
+        </div>
         <div>
           <button
             type="button"
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             onClick={() => openDockerFileModal()}
           >
-            Add Item
+            Add New Stage
+          </button>
+          <button
+            type="button"
+            className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-600  shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={() => ''}
+          >
+            Save File
           </button>
         </div>
         <div className="flex w-full mt-2">
@@ -80,7 +130,11 @@ function ProjectDetails(): JSX.Element {
                       className="flex bg-white border cursor-move mb-2 w-full"
                     >
                       <div className="py-2 px-4 flex-1">{dockerfile.method}</div>
-                      <div className="py-2 px-4 flex-2 ">{ typeof dockerfile.data == 'string' ? dockerfile.data : JSON.stringify(dockerfile.data)}</div>
+                      <div className="py-2 px-4 flex-2 ">
+                        {typeof dockerfile.data === 'string'
+                          ? dockerfile.data
+                          : JSON.stringify(dockerfile.data)}
+                      </div>
                     </div>
                   ))}
                   <div className="flex justify-end mb-2">
@@ -88,7 +142,7 @@ function ProjectDetails(): JSX.Element {
                       className="cursor-pointer border border-dotted border-red-500 px-2 py-1 rounded-md"
                       onClick={() => openDockerFileModal()}
                     >
-                      add
+                      Add
                     </button>
                   </div>
                 </div>

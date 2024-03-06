@@ -4,6 +4,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 interface CustomAPI {
   selectFolder: () => Promise<string | undefined>
+  openFinder: (folderPath: string) => any
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -13,7 +14,8 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', {
-      selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>
+      selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>,
+      openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath)
     } as CustomAPI)
   } catch (error) {
     console.error(error)
@@ -23,6 +25,7 @@ if (process.contextIsolated) {
   window.electron = electronAPI
   // @ts-ignore (define in dts)
   window.api = {
-    selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>
+    selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>,
+    openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath)
   } as CustomAPI
 }
