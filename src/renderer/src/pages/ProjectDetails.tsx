@@ -3,7 +3,7 @@ import { http } from '@utils/http/index'
 import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 function ProjectDetails(): JSX.Element {
   const navigate = useNavigate()
@@ -56,6 +56,10 @@ function ProjectDetails(): JSX.Element {
 
   const handleDataFetch = (): void => {
     getData()
+  }
+
+  function handleDeleteDockerfile(a, b): void {
+    console.log(a,b)
   }
 
   return (
@@ -127,11 +131,20 @@ function ProjectDetails(): JSX.Element {
                         key={dockerfile.id}
                         className="mt-3 flex bg-white px-1 py-2 shadow sm:rounded-lg sm:px-1 group hover:border-[1px] border-[1px] border-transparent cursor-pointer"
                       >
-                        <div className="py-2 px-4 flex-1">{dockerfile.method}</div>
-                        <div className="py-2 px-4 flex-2">
+                        <div className="py-2 px-4 w-3/12">{dockerfile.method}</div>
+                        <div className="py-2 px-4 w-7/12 overflow-scroll   ">
                           {typeof dockerfile.data === 'string'
                             ? dockerfile.data
                             : JSON.stringify(dockerfile.data)}
+                        </div>
+                        <div className="py-2 px-4 flex ml-[10%] "> {/* Move XMarkIcon button to the end */}
+                          <button
+                            className="cursor-pointer rounded-md bg-red-500 px-1 py-1 h-6 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            style={{ maxHeight: '30px' }} // Set the maximum height here
+                            onClick={() => handleDeleteDockerfile(stageItem.stage, dockerfile.id)}
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -143,6 +156,7 @@ function ProjectDetails(): JSX.Element {
                         Add item
                       </button>
                     </div>
+                    
                   </div>
                 </div>
               ))}
