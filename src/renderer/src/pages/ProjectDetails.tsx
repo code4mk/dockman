@@ -67,10 +67,10 @@ function ProjectDetails(): JSX.Element {
         onDataFetch={handleDataFetch}
       />
 
-      <div className="flex min-h-[90vh] max-h-[90vh] bg-gray-100 p-4 flex-col">
-        <div className="mb-4">
+      <div className="flex min-h-[90vh] max-h-[90vh] bg-gray-100 pl-4 pr-4 pt-1 flex-col">
+        <div className="mb-2">
           <p
-            className="flex cursor-pointer text-teal-500 text-sm items-center"
+            className="flex cursor-pointer text-teal-500 text-sm  items-center"
             onClick={() => navigate(`/project`)}
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -99,14 +99,14 @@ function ProjectDetails(): JSX.Element {
           <div>
             <button
               type="button"
-              className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               onClick={() => openDockerFileModal()}
             >
               Add New Stage
             </button>
             <button
               type="button"
-              className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-blue-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-blue-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               onClick={() => ''}
             >
               Save File
