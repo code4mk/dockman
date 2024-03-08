@@ -103,10 +103,6 @@ def create_project_dockerfile():
     data = request.form.get('data')
     stage = request.form.get('stage')
 
-    # Validate that all required data is provided
-    if not all([project_id, method, title, data, stage]):
-        return jsonify({'message': 'Incomplete data provided'}), 400
-
     # Create a new ProjectDockerfile instance
     new_project_dockerfile = ProjectDockerfile(
         project_id=project_id,
@@ -138,6 +134,13 @@ def create_project_dockerfile():
         # Failed to add the dockerfile
         return jsonify({'message': 'Failed to add the dockerfile item'}), 500
 
+@bp.route('/delete-dockerfile/<int:id>', methods=['DELETE'])
+def delete_dockerfile(id):
+    the_item = ProjectDockerfile.query.get(id)
+    db.session.delete(the_item)
+    db.session.commit()
+
+    return jsonify({'message': 'Delete successfully'})
 
 from itertools import groupby
 import json
@@ -157,7 +160,7 @@ def get_all_dockerfiles(project_id):
                 if dockerfile.method == 'env':
                     parsed_data = json.loads(dockerfile.data)
                 else:
-                    parsed_data = dockerfile.data
+                    parsed_data = json.loads(dockerfile.data)
             except JSONDecodeError as e:
                 # Handle the error (e.g., log it, provide a default value, etc.)
                 parsed_data = None
@@ -195,7 +198,7 @@ def the_dockerfile(project_id):
                 if dockerfile.method == 'env':
                     parsed_data = json.loads(dockerfile.data)
                 else:
-                    parsed_data = dockerfile.data
+                    parsed_data = json.loads(dockerfile.data)
             except JSONDecodeError as e:
                 # Handle the error (e.g., log it, provide a default value, etc.)
                 parsed_data = None
@@ -245,16 +248,4 @@ def the_dockerfile(project_id):
     generated_dockerfile = dockerfile.get_content()
     return jsonify({'data': generated_dockerfile})
 
-# @bp.route('/the-dockerfile/<int:project_id>', methods=['GET'])
-# def the_dockerfile(project_id):
-#     try:
-#         dockerfile = DockerfileGenerator()
-#         dockerfile.stage('kamal')
-#         a = dockerfile.get_content()
-#         return jsonify({'data': f'kamal is here {project_id}', 'a': a})
-#     except Exception as e:
-#         error_message = f"An error occurred: {str(e)}"
-#         # Log the error or print it for debugging
-#         print(error_message)
-#         return jsonify({'error': error_message})  # 500 Internal Server Error
 

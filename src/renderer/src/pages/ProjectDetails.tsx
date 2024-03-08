@@ -3,13 +3,18 @@ import { http } from '@utils/http/index'
 import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
 
 function ProjectDetails(): JSX.Element {
   const navigate = useNavigate()
   const [allDockerfiles, setAllDockerfiles] = useState([])
   const [theDoc, setTheDoc] = useState('')
   const [theProjectData, setTheProjectData] = useState({} as any)
+  const [theOpenTab, setTheOpenTab] = useState('dockerfile')
   const [modals, setModals] = useState({
     dockerfileGenerateModal: false
   })
@@ -58,9 +63,23 @@ function ProjectDetails(): JSX.Element {
     getData()
   }
 
-  function handleDeleteDockerfile(a, b): void {
-    console.log(a,b)
+  function handleDeleteDockerfile(a, id): void {
+    http.delete(`/project/delete-dockerfile/${id}`).then((response) => {
+      console.log(response.data)
+      getData()
+    })
   }
+
+  function handleOpenTab(name: string): void {
+    setTheOpenTab(name)
+  }
+
+  const tabs = [
+    { name: 'Dockerfile', slug: 'dockerfile', current: true },
+    { name: 'Nginx', slug: 'nginx', current: false },
+    { name: 'Supervisord', slug: 'supervisord', current: false },
+    { name: 'Build Image', slug: 'build_image', current: false }
+  ]
 
   return (
     <BaseLayout>
@@ -81,7 +100,7 @@ function ProjectDetails(): JSX.Element {
             Back
           </p>
         </div>
-        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-4 group hover:border-[1px] border-[1px] border-transparent">
+        <div className="bg-white px-4 py-4 shadow sm:rounded-lg sm:px-4 group hover:border-[1px] border-[1px] border-transparent">
           <p className="text-lg">Name: {theProjectData?.name}</p>
           <p className="text-lg">
             Path:{' '}
@@ -93,84 +112,125 @@ function ProjectDetails(): JSX.Element {
             </span>
           </p>
         </div>
-        <div className="mb-4 flex gap-2 sticky top-0 bg-white p-2 mt-4">
-          <p className="border-b-2 border-teal-500 pb-1 cursor-pointer">dockerfile</p>
-          <p className="border-b-2 border-teal-500 pb-1 cursor-pointer">nginx</p>
-          <p className="border-b-2 border-teal-500 pb-1 cursor-pointer">supervisord</p>
-          <p className="border-b-2 border-teal-500 pb-1 cursor-pointer">build image</p>
+        <div className="hidden sm:block sticky top-0 mt-2">
+          <nav
+            className="isolate flex divide-x divide-gray-200 rounded-lg shadow"
+            aria-label="Tabs"
+          >
+            {tabs.map((tab, tabIdx) => (
+              <div
+                key={tab.name}
+                onClick={() => handleOpenTab(tab.slug)}
+                className={classNames(
+                  theOpenTab === tab.slug ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700',
+                  tabIdx === 0 ? 'rounded-l-lg' : '',
+                  tabIdx === tabs.length - 1 ? 'rounded-r-lg' : '',
+                  'group relative min-w-0 flex-1 overflow-hidden bg-white cursor-pointer py-2 text-center text-sm font-medium hover:bg-gray-50 focus:z-10'
+                )}
+              >
+                <span>{tab.name}</span>
+                <span
+                  aria-hidden="true"
+                  className={classNames(
+                    theOpenTab === tab.slug ? 'bg-teal-500' : 'bg-transparent',
+                    'absolute inset-x-0 bottom-0 h-0.5'
+                  )}
+                />
+              </div>
+            ))}
+          </nav>
         </div>
+
         <div className="sticky top-0">
           <div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              onClick={() => openDockerFileModal()}
-            >
-              Add New Stage
-            </button>
-            <button
-              type="button"
-              className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-blue-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              onClick={() => ''}
-            >
-              Save File
-            </button>
-          </div>
-          <hr className="mt-4" />
-          <div className="flex w-full mt-2">
-            <div className="w-1/2  shadow  rounded-md bg-slate-200  overflow-y-auto max-h-[56vh]">
-              {allDockerfiles?.map((stageItem: any) => (
-                <div
-                  key={stageItem.stage}
-                  className={`p-4 m-2 rounded shadow ${stageItem.dockerfiles.length > 0 ? 'bg-slate-100' : 'bg-slate-100'} mb-2`}
-                >
-                  <p className="text-md font-bold mb-2">{stageItem.stage}</p>
-                  <div className="flex flex-col">
-                    {stageItem.dockerfiles.map((dockerfile) => (
+            {theOpenTab === 'dockerfile' && (
+              <>
+                <div className="mt-4">
+                  <p>{theOpenTab}</p>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-x-1.5 rounded-md bg-teal-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    onClick={() => openDockerFileModal()}
+                  >
+                    Add New Stage
+                  </button>
+                  <button
+                    type="button"
+                    className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-blue-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    onClick={() => ''}
+                  >
+                    Save File
+                  </button>
+                </div>
+                <hr className="mt-4" />
+                <div className="flex w-full mt-2">
+                  <div className="w-1/2  shadow  rounded-md bg-slate-200  overflow-y-auto max-h-[56vh]">
+                    {allDockerfiles?.map((stageItem: any) => (
                       <div
-                        key={dockerfile.id}
-                        className="mt-3 flex bg-white px-1 py-2 shadow sm:rounded-lg sm:px-1 group hover:border-[1px] border-[1px] border-transparent cursor-pointer"
+                        key={stageItem.stage}
+                        className={`p-4 m-2 rounded shadow ${stageItem.dockerfiles.length > 0 ? 'bg-slate-100' : 'bg-slate-100'} mb-2`}
                       >
-                        <div className="py-2 px-4 w-3/12">{dockerfile.method}</div>
-                        <div className="py-2 px-4 w-7/12 overflow-scroll   ">
-                          {typeof dockerfile.data === 'string'
-                            ? dockerfile.data
-                            : JSON.stringify(dockerfile.data)}
-                        </div>
-                        <div className="py-2 px-4 flex ml-[10%] "> {/* Move XMarkIcon button to the end */}
-                          <button
-                            className="cursor-pointer rounded-md bg-red-500 px-1 py-1 h-6 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                            style={{ maxHeight: '30px' }} // Set the maximum height here
-                            onClick={() => handleDeleteDockerfile(stageItem.stage, dockerfile.id)}
-                          >
-                            <XMarkIcon className="w-4 h-4" />
-                          </button>
+                        <p className="text-md font-bold mb-2">{stageItem.stage}</p>
+                        <div className="flex flex-col">
+                          {stageItem.dockerfiles.map((dockerfile) => (
+                            <div
+                              key={dockerfile.id}
+                              className="mt-3 flex bg-white px-1 py-2 shadow sm:rounded-lg sm:px-1 group hover:border-[1px] border-[1px] border-transparent cursor-pointer"
+                            >
+                              <div className="py-2 px-4 w-3/12">{dockerfile.method}</div>
+                              <div className="py-2 px-4 w-7/12 overflow-x-auto   ">
+                                {typeof dockerfile.data === 'string'
+                                  ? dockerfile.data
+                                  : JSON.stringify(dockerfile.data)}
+                              </div>
+
+                              <div className="py-2 px-4 flex ml-[10%] ">
+                                <button
+                                  className=" mr-1 cursor-pointer rounded-md bg-teal-500 px-1 py-1 h-6 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                  style={{ maxHeight: '30px' }} // Set the maximum height here
+                                  onClick={() =>
+                                    handleDeleteDockerfile(stageItem.stage, dockerfile.id)
+                                  }
+                                >
+                                  <PencilSquareIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                  className="cursor-pointer rounded-md bg-red-500 px-1 py-1 h-6 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                  style={{ maxHeight: '30px' }} // Set the maximum height here
+                                  onClick={() =>
+                                    handleDeleteDockerfile(stageItem.stage, dockerfile.id)
+                                  }
+                                >
+                                  <XMarkIcon className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          <div className="flex justify-end mb-2 mt-2">
+                            <button
+                              className="cursor-pointer rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                              onClick={() => openDockerFileModal()}
+                            >
+                              Add item
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
-                    <div className="flex justify-end mb-2 mt-2">
-                      <button
-                        className="cursor-pointer rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        onClick={() => openDockerFileModal()}
-                      >
-                        Add item
-                      </button>
-                    </div>
-                    
+                  </div>
+                  <div className="w-1/2 pl-2">
+                    <textarea
+                      disabled={false}
+                      rows={25}
+                      className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm resize-none"
+                      value={theDoc}
+                      onInput={(event: any) => console.log('')}
+                      placeholder={''}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="w-1/2 pl-2">
-              <textarea
-                disabled={false}
-                rows={25}
-                className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm resize-none"
-                value={theDoc}
-                onInput={(event: any) => console.log('')}
-                placeholder={''}
-              />
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>
