@@ -4,6 +4,7 @@ import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
+import toast from 'react-hot-toast';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -72,6 +73,19 @@ function ProjectDetails(): JSX.Element {
 
   function handleOpenTab(name: string): void {
     setTheOpenTab(name)
+  }
+
+  function saveContentDockerFile(): void {
+    const formData = new FormData()
+    formData.append('content', theDoc)
+    formData.append('project_path', theProjectData?.project_path)
+    http.post('/project/save-content-dockerfile', formData).then((response) => {
+      toast.success('dockerfile content saved', {
+        duration: 3000,
+        position: 'top-center',
+        className: 'mt-14 mr-2'
+      })
+    })
   }
 
   const tabs = [
@@ -157,7 +171,7 @@ function ProjectDetails(): JSX.Element {
                   <button
                     type="button"
                     className="ml-4 inline-flex items-center gap-x-1.5 rounded-md bg-blue-500 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    onClick={() => ''}
+                    onClick={() => saveContentDockerFile()}
                   >
                     Save File
                   </button>

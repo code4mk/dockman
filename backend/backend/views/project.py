@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify, g
 from backend.models import db
 from backend.models.project import Project, ProjectDockerfile
 from dock_craftsman.dockerfile_generator import DockerfileGenerator
+from itertools import groupby
+import json
+from json.decoder import JSONDecodeError
 
 bp = Blueprint('project', __name__)
 
@@ -142,9 +145,6 @@ def delete_dockerfile(id):
 
     return jsonify({'message': 'Delete successfully'})
 
-from itertools import groupby
-import json
-from json.decoder import JSONDecodeError
 
 @bp.route('/get-all-dockerfiles/<int:project_id>', methods=['GET'])
 def get_all_dockerfiles(project_id):
@@ -248,4 +248,31 @@ def the_dockerfile(project_id):
     generated_dockerfile = dockerfile.get_content()
     return jsonify({'data': generated_dockerfile})
 
+import os
+@bp.route('/save-content-dockerfile', methods=['POST'])
+def save_content_dockerfile():
+    data = request.form
+    content = data.get('content')
+    project_path = data.get('project_path')
+    
+    # Define the path to the dockerfiles folder
+    dockerfiles_folder = os.path.join(project_path, 'the_dockman/dockerfiles')
+    
+    # Create the dockerfiles folder if it doesn't exist
+    if not os.path.exists(dockerfiles_folder):
+        os.makedirs(dockerfiles_folder)
 
+        # Set read and write permissions for the dockerfiles folder
+        os.chmod(dockerfiles_folder, 0o755)
+
+    # Define the path to the app.Dockerfile
+    dockerfile_path = os.path.join(dockerfiles_folder, 'app.Dockerfile')
+
+    # Write or update the content to the app.Dockerfile
+    with open(dockerfile_path, 'w') as file:
+        file.write(content)
+
+        # Set read and write permissions for the app.Dockerfile
+        os.chmod(dockerfile_path, 0o644)
+
+    return jsonify({'message': 'Dockerfile saved successfully'}), 200

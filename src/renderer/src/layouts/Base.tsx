@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import theIcon from './icon.png'
+import { Toaster } from 'react-hot-toast';
 
 
 const teams = [
@@ -101,6 +102,7 @@ export default function BaseLayout({children}: any) {
   return (
     <>
       <div>
+        <Toaster />
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
             <Transition.Child
