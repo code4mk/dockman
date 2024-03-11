@@ -5,6 +5,7 @@ from dock_craftsman.dockerfile_generator import DockerfileGenerator
 from itertools import groupby
 import json
 from json.decoder import JSONDecodeError
+import requests
 
 bp = Blueprint('project', __name__)
 
@@ -276,3 +277,25 @@ def save_content_dockerfile():
         os.chmod(dockerfile_path, 0o644)
 
     return jsonify({'message': 'Dockerfile saved successfully'}), 200
+
+@bp.route('get-nginx-lists', methods=['GET'])
+def get_nginx_lists():
+    url = "https://raw.githubusercontent.com/dockmandev/dockman-data-hub/main/nginx/nginx.json"
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+@bp.route('get-nginx-data', methods=['GET'])
+def get_nginx_data():
+    url = request.args.get('path')
+
+    if not url:
+        return "Missing 'path' parameter", 400
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+        data = response.text  # Get the response content as a string
+        return data
+    except requests.exceptions.RequestException as e:
+        return f'Request failed: {str(e)}', 500

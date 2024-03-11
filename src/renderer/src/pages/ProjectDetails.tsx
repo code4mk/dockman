@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import DockerfileEditor from '@components/project/DockerfileEditor'
-import NginxEditor from '@components/project/NginxEditor'
+import NginxTab from '@components/project/NginxTab'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -243,7 +243,7 @@ function ProjectDetails(): JSX.Element {
 
             {theOpenTab === 'nginx' && (
               <div className="max-h-[56vh] mt-10 w-full">
-                <NginxEditor content="mk" language="nginx" />
+                <NginxTab />
               </div>
             )}
           </div>

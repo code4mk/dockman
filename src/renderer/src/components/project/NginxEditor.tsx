@@ -97,7 +97,7 @@ function NginxEditor({ content, language }: TheProps): JSX.Element {
           }
           // ... other options
         }}
-        height="65vh"
+        height="55vh"
         width="100%"
         onChange={handleContentChange}
       />
