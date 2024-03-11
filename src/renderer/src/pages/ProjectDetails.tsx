@@ -4,7 +4,9 @@ import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'
+import DockerfileEditor from '@components/project/DockerfileEditor'
+import NginxEditor from '@components/project/NginxEditor'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -232,18 +234,17 @@ function ProjectDetails(): JSX.Element {
                       </div>
                     ))}
                   </div>
-                  <div className="w-1/2 pl-2">
-                    <textarea
-                      disabled={false}
-                      rows={25}
-                      className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm resize-none"
-                      value={theDoc}
-                      onInput={(event: any) => console.log('')}
-                      placeholder={''}
-                    />
+                  <div className="w-1/2 pl-2 w-max-[56vh]">
+                    <DockerfileEditor content={theDoc} language="dockerfile" />
                   </div>
                 </div>
               </>
+            )}
+
+            {theOpenTab === 'nginx' && (
+              <div className="max-h-[56vh] mt-10 w-full">
+                <NginxEditor content="mk" language="nginx" />
+              </div>
             )}
           </div>
         </div>
