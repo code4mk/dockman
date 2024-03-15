@@ -368,7 +368,10 @@ const githubLightTheme: any = {
       fontStyle: 'underline',
       token: 'string.other.link'
     },
-
+    {
+      foreground: '#0078d0',
+      token: 'ip.port'
+    }
   ],
   colors: {
     'editor.foreground': '#24292e',

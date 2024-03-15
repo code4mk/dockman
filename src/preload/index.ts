@@ -15,7 +15,8 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', {
       selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>,
-      openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath)
+      openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath),
+      readDirectory: (folderPath: string) => ipcRenderer.invoke('readDirectory', folderPath)
     } as CustomAPI)
   } catch (error) {
     console.error(error)
@@ -26,6 +27,7 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.api = {
     selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>,
-    openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath)
+    openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath),
+    readDirectory: (folderPath: string) => ipcRenderer.invoke('readDirectory', folderPath)
   } as CustomAPI
 }

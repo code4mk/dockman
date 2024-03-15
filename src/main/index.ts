@@ -3,10 +3,12 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { spawn, exec } from 'child_process'
+import fs from 'fs'
+import path from 'path'
 
 let pythonProcess // Reference to the Python child process
 let the_backend_port: string | number // Variable to store the dynamically allocated port
-
+let mainWindow
 async function createWindow(): Promise<void> {
   console.log('Creating main window...')
 
@@ -22,7 +24,7 @@ async function createWindow(): Promise<void> {
   // Dynamically get an available port
   the_backend_port = await getPort()
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1050,
     height: 670,
     show: false,
@@ -50,6 +52,11 @@ async function createWindow(): Promise<void> {
 
   ipcMain.handle('openFinder', (event, folderPath) => {
     shell.openPath(folderPath)
+  })
+
+  ipcMain.handle('readDirectory', (event, folderPath) => {
+    const directoryContents = readDirectory(folderPath)
+    return directoryContents
   })
 
   mainWindow.webContents.once('dom-ready', () => {
@@ -131,3 +138,46 @@ app.on('before-quit', () => {
   console.log('Before quit event. Initiating shutdown.')
   shutdown()
 })
+
+interface FileItem {
+  name: string
+  type: 'folder' | 'file'
+  isDirectory: boolean
+  children?: FileItem[]
+  content?: string
+}
+
+function readDirectory(dirPath: string): FileItem {
+  // Normalize the path
+  dirPath = path.normalize(dirPath)
+
+  if (!fs.existsSync(dirPath)) {
+    throw new Error(`Path "${dirPath}" does not exist.`)
+  }
+
+  const stats = fs.statSync(dirPath)
+  const item: FileItem = {
+    name: path.basename(dirPath),
+    type: stats.isDirectory() ? 'folder' : 'file',
+    isDirectory: stats.isDirectory()
+  }
+
+  if (stats.isDirectory()) {
+    const children = fs
+      .readdirSync(dirPath)
+      .map((child) => readDirectory(path.join(dirPath, child)))
+    // Separate folders and files
+    const folders = children.filter((child) => child.type === 'folder')
+    const files = children.filter((child) => child.type === 'file')
+    item.children = folders.concat(files)
+  } else {
+    // Read file content synchronously and add it to the item
+    // try {
+    //   item.content = fs.readFileSync(dirPath, 'utf-8')
+    // } catch (err) {
+    //   console.error(`Error reading file ${dirPath}: ${err}`)
+    // }
+  }
+
+  return item
+}

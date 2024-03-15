@@ -9,8 +9,13 @@ const nginxTokenConf = {
       // [/[{}()[\]]/, "@brackets"],
       [/[;,.]/, 'delimiter'],
       [/\\.* |~|~\*|!~|!~\*/, 'string.regexp'],
+      ['(?:\\d{1,3}\\.){3}\\d{1,3}(?::\\d{1,5})?', 'ip.port'],
       [/\b\d+\w+\b/, 'number'],
-      [/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d{1,5})?\b/, 'number'],
+      // [/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d{1,5})?\b/, 'number'],
+      [
+        /\b(?:https?:\/\/\S+|ftp:\/\/\S+|www\.\S+|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d{1,5})?)\b/,
+        'string.regexp'
+      ],
       [/\b(ip_hash|upstream|server)\b/, 'http.upstream'],
       [/\b(add_header|expires|server_tokens)\b/, 'http.headers'],
       [/\b(map|map_hash_max_size|map_hash_bucket_size)\b/, 'module.http'],

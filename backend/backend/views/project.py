@@ -250,34 +250,58 @@ def the_dockerfile(project_id):
     return jsonify({'data': generated_dockerfile})
 
 import os
-@bp.route('/save-content-dockerfile', methods=['POST'])
-def save_content_dockerfile():
+@bp.route('/save-content', methods=['POST'])
+def save_content():
     data = request.form
     content = data.get('content')
     project_path = data.get('project_path')
+    the_type = data.get('the_type')
     
-    # Define the path to the dockerfiles folder
-    dockerfiles_folder = os.path.join(project_path, 'the_dockman/dockerfiles')
+    the_folder = ''
+    the_path = ''
+    
+    if the_type == 'dockerfile':
+        the_folder = os.path.join(project_path, 'the_dockman/dockerfiles')
+        the_path = os.path.join(the_folder, 'app.Dockerfile')
+    elif the_type == 'nginx':
+        the_folder = os.path.join(project_path, 'the_dockman/config/nginx')
+        the_path = os.path.join(the_folder, 'app.conf')
     
     # Create the dockerfiles folder if it doesn't exist
-    if not os.path.exists(dockerfiles_folder):
-        os.makedirs(dockerfiles_folder)
+    if not os.path.exists(the_folder):
+        os.makedirs(the_folder)
 
         # Set read and write permissions for the dockerfiles folder
-        os.chmod(dockerfiles_folder, 0o755)
+        os.chmod(the_folder, 0o755)
 
-    # Define the path to the app.Dockerfile
-    dockerfile_path = os.path.join(dockerfiles_folder, 'app.Dockerfile')
 
     # Write or update the content to the app.Dockerfile
-    with open(dockerfile_path, 'w') as file:
+    with open(the_path, 'w') as file:
         file.write(content)
 
         # Set read and write permissions for the app.Dockerfile
-        os.chmod(dockerfile_path, 0o644)
+        os.chmod(the_path, 0o644)
 
-    return jsonify({'message': 'Dockerfile saved successfully'}), 200
+    return jsonify({'message': f'{the_type} saved successfully'}), 200
 
+@bp.route('get-file-data', methods=['GET'])
+def get_file_data():
+    # Extracting the 'path' query parameter from the request
+    file_path = request.args.get('path')
+
+    if file_path:
+        # Check if the file exists
+        if os.path.exists(file_path):
+            # File exists, read its contents
+            with open(file_path, 'r') as file:
+                file_data = file.read()
+            return jsonify({'file_data': file_data}), 200
+        else:
+            # File does not exist, return empty content
+            return jsonify({'file_data': ''}), 200
+    else:
+        return jsonify({'error': 'Path parameter is missing'}), 400
+    
 @bp.route('get-nginx-lists', methods=['GET'])
 def get_nginx_lists():
     url = "https://raw.githubusercontent.com/dockmandev/dockman-data-hub/main/nginx/nginx.json"

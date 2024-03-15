@@ -48,6 +48,37 @@ function ProjectDetails(): JSX.Element {
     getProjectData(1)
   }, [])
 
+  useEffect(() => {
+    const fetchDirectoryContents = async () => {
+      if (theProjectData?.project_path) {
+        try {
+          const result = await window?.api.readDirectory(theProjectData?.project_path)
+          console.log(result);
+        } catch (error) {
+          console.error('Error reading directory:', error);
+        }
+      }
+    };
+
+    fetchDirectoryContents();
+
+    return () => {
+      // Cleanup function (if needed)
+    };
+  }, [theProjectData]);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('directoryChanged', (event, item) => {
+      console.log(item);
+      // Perform actions you want to do when a file changes
+    })
+
+    return () => {
+      // Clean up the event listener when the component unmounts
+      window.electron.ipcRenderer.removeAllListeners('directoryChanged');
+    };
+  }, []);
+
   const handleModalClose = (data: any): void => {
     setModals((prevState) => ({
       ...prevState,
@@ -81,7 +112,8 @@ function ProjectDetails(): JSX.Element {
     const formData = new FormData()
     formData.append('content', theDoc)
     formData.append('project_path', theProjectData?.project_path)
-    http.post('/project/save-content-dockerfile', formData).then((response) => {
+    formData.append('the_type', 'dockerfile')
+    http.post('/project/save-content', formData).then((response) => {
       toast.success('dockerfile content saved', {
         duration: 3000,
         position: 'top-center',

@@ -8,9 +8,10 @@ import directives from '@utils/monaco/nginx-lang/directives.json'
 interface TheProps {
   content: string
   language: string
+  onContentChange: any
 }
 
-function NginxEditor({ content, language }: TheProps): JSX.Element {
+function NginxEditor({ content, language, onContentChange }: TheProps): JSX.Element {
   const monacoRef: any = useRef(null)
   const [theData, setTheData] = useState('')
 
@@ -76,8 +77,11 @@ function NginxEditor({ content, language }: TheProps): JSX.Element {
     setTheData(content)
   }, [content])
 
+  useEffect(() => {
+    onContentChange(theData)
+  }, [theData])
+
   const handleContentChange = (newValue: any, event: any) => {
-    console.log(newValue)
     setTheData(newValue)
   }
 
@@ -94,10 +98,12 @@ function NginxEditor({ content, language }: TheProps): JSX.Element {
           wordWrap: 'on',
           minimap: {
             enabled: true
-          }
+          },
+          fixedOverflowWidgets: false
+          // renderWhitespace: 'all'
           // ... other options
         }}
-        height="55vh"
+        height="54vh"
         width="100%"
         onChange={handleContentChange}
       />
