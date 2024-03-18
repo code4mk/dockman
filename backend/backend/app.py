@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from backend.models import db
 # Get the home directory
 import os
+from .socket_manager import init_socketio
 home_directory = os.path.expanduser("~")
 
 def create_app():
@@ -36,3 +37,7 @@ def create_app():
     app.register_blueprint(network.bp, url_prefix='/the-network')
 
     return app
+
+
+app = create_app()
+sio = init_socketio(app)

@@ -1,9 +1,28 @@
 import { http } from '@utils/http'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import io from 'socket.io-client';
+import useSocket from '@utils/hooks/useSocket';
 
 function BuildImageTab(): JSX.Element {
   const [selectedMenu, setSelectedMenu] = useState('builder')
+  const theSocket: any = useSocket()
+
+  function buildImageSocket(): void {
+    console.log('build -image')
+  }
+
+  useEffect(() => {
+    if (theSocket) {
+      theSocket.on('connect', () => {
+        console.log('SocketIO connected')
+        // theSocket.emit('message', { message: 'Checking server status' })
+        theSocket.on('message', (data) => {
+          console.log(data)
+        })
+      })
+    }
+  }, [theSocket])
 
   return (
     <div className="flex">
@@ -37,7 +56,10 @@ function BuildImageTab(): JSX.Element {
               <button className="rounded-md bg-blue-500 px-4 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                 Save
               </button>
-              <button className=" ml-4 rounded-md bg-teal-500 px-4 py-1 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+              <button
+                onClick={() => buildImageSocket()}
+                className=" ml-4 rounded-md bg-teal-500 px-4 py-1 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
                 Build
               </button>
             </div>

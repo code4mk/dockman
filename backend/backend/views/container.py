@@ -2,13 +2,16 @@
 
 from flask import Blueprint, jsonify
 from dock_craftsman.docker.container import TheContainer
+# from backend.app import sio
 
 bp = Blueprint('container', __name__)
-
+    
 @bp.route('/', methods=['get'])
 def lists():
     container = TheContainer(docker_socket="unix:///Users/code4mk/.colima/default/docker.sock")
     the_response = container.get_lists()
+    from backend.app import sio
+    sio.emit('message', {'message': 'container is fetching'})
     return jsonify({'data': the_response})
 
 @bp.route('/logs/<container_id>', methods=['get'])
