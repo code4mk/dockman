@@ -7,6 +7,7 @@ import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/
 import toast from 'react-hot-toast'
 import DockerfileEditor from '@components/project/DockerfileEditor'
 import NginxTab from '@components/project/NginxTab'
+import BuildImageTab from '@components/project/build-image/BuildImageTab'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -276,6 +277,12 @@ function ProjectDetails(): JSX.Element {
             {theOpenTab === 'nginx' && (
               <div className="max-h-[56vh] mt-10 w-full">
                 <NginxTab />
+              </div>
+            )}
+
+            {theOpenTab === 'build_image' && (
+              <div className="max-h-[56vh] w-full">
+                <BuildImageTab />
               </div>
             )}
           </div>
