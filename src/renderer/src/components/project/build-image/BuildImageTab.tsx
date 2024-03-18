@@ -5,20 +5,20 @@ import toast from 'react-hot-toast'
 function BuildImageTab(): JSX.Element {
   return (
     <div className="flex">
-      <div className="flex w-2/12 md:mb-0 bg-slate-200 mt-2 rounded min-h-[70vh] ">
+      <div className="flex w-2/12 md:mb-0 bg-white mt-2 rounded min-h-[70vh] ">
         <div className="flex flex-col w-full p-3">
-          <div className="py-2 px-4 w-full bg-white shadow rounded mb-2 cursor-pointer">
+          <div className="py-2 px-4 w-full bg-slate-200 shadow rounded mb-2 cursor-pointer">
             <p>Builder</p>
           </div>
-          <div className="py-2 px-4 w-full bg-white shadow rounded mb-2 cursor-pointer">
+          <div className="py-2 px-4 w-full bg-slate-200 shadow rounded mb-2 cursor-pointer">
             <p>Environment</p>
           </div>
-          <div className="py-2 px-4 w-full bg-white shadow rounded mb-2 cursor-pointer">
+          <div className="py-2 px-4 w-full bg-slate-200 shadow rounded mb-2 cursor-pointer">
             <p>Registry</p>
           </div>
         </div>
       </div>
-      <div className=" p-4 w-10/12 border rounded ml-4 mt-2">
+      <div className=" p-4 w-10/12 border rounded ml-4 mt-2 bg-white">
         <div className="mb-4 flex flex-row">
           <p className="mr-4">Docker Image build</p>
           <button className="rounded-md bg-blue-500 px-4 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save</button>
