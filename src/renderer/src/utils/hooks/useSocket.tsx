@@ -13,10 +13,10 @@ const useSocket = (): SocketInstance => {
 
   useEffect(() => {
     if (globalState.backendPort) {
-      const serverUrl = globalState.backendPort
-          ? `http://localhost:${globalState.backendPort}`
-          : 'http://localhost:defaultPort',
-        socketInstance = io(serverUrl)
+      // const serverUrl = globalState.backendPort
+      //     ? `http://localhost:${globalState.backendPort}`
+      //     : 'http://localhost:defaultPort',
+      socketInstance = io(`http://127.0.0.1:${globalState.backendPort}`)
       setSocket(socketInstance)
     }
 

@@ -83,11 +83,19 @@ async function createWindow(): Promise<void> {
     })
     console.log('Development mode: Python process started.')
   } else {
-    spawn(runFlask, [the_backend_port.toString(), 'false'], {
+    const backendProcess = spawn(runFlask, [the_backend_port.toString(), 'true'], {
       detached: true,
-      stdio: 'ignore'
+      shell: true,
+      stdio: 'inherit'
     })
+    
+    backendProcess.on('error', (error) => {
+      console.error('Error starting backend server:', error)
+    })
+    
     console.log(`Production mode: Backend is running on port ${the_backend_port}.`)
+    
+    
   }
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
