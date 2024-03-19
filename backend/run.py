@@ -1,6 +1,7 @@
 import sys
 from backend.app import app, sio
 from backend.app import create_app
+from flask_socketio import join_room 
 
 # app = create_app()
 
@@ -34,15 +35,18 @@ def handle_connect():
 def handle_disconnect():
     print('Client disconnected')
 
-def handle_message(data):
-    print('Server is running!')
-    print(data['message'])
-    sio.emit('message', {'message': 'Server is running mostafa!'})
-
+def handle_join_room(room):
+    join_room(room)
+    print(f"service has joined room: {room}")
+    
 # Register event handlers
 sio.on_event('connect', handle_connect)
 sio.on_event('disconnect', handle_disconnect)
-sio.on_event('message', handle_message)
+sio.on_event('joinRoom', handle_join_room)
+
+
+
+
 
 if __name__ == '__main__':
     #sio.run(app, **app_config)

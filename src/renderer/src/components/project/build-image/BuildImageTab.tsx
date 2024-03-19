@@ -16,7 +16,7 @@ function BuildImageTab(): JSX.Element {
     if (theSocket) {
       theSocket.on('connect', () => {
         console.log('SocketIO connected')
-        // theSocket.emit('message', { message: 'Checking server status' })
+        theSocket.emit('joinRoom', 'kamal')
         theSocket.on('message', (data) => {
           console.log(data)
         })

@@ -11,7 +11,9 @@ def lists():
     container = TheContainer(docker_socket="unix:///Users/code4mk/.colima/default/docker.sock")
     the_response = container.get_lists()
     from backend.app import sio
-    sio.emit('message', {'message': 'container is fetching'})
+    sio.emit('message', {'message': 'container is fetching'}, to="kamal")
+    #sio.emit( {'message': 'container is fetching'}, event='message',)
+    
     return jsonify({'data': the_response})
 
 @bp.route('/logs/<container_id>', methods=['get'])

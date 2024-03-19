@@ -15,6 +15,7 @@ twine = "*"
 wheel = "*"
 dock-craftsman = "*"
 flask-socketio = "*"
+python-engineio = "*"
 
 [dev-packages]
 
