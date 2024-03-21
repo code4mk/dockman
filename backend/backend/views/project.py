@@ -323,3 +323,178 @@ def get_nginx_data():
         return data
     except requests.exceptions.RequestException as e:
         return f'Request failed: {str(e)}', 500
+
+
+from threading import Lock
+from time import sleep
+
+threads = {}
+thread_lock = Lock()
+stop_background_task = {}
+
+@bp.route('docker-build', methods=['POST'])
+def docker_build():
+    data = request.form
+    content = data.get('content')
+    
+    global threads, stop_background_task
+    some_data = "Your data here"  # Pass your data as needed
+    task_key = 'kamal'
+    with thread_lock:
+        if task_key not in threads or not threads[task_key]['thread'].is_alive():
+            from backend.app import sio
+            threads[task_key] = {'thread': sio.start_background_task(background_task, task_key, some_data)}
+            stop_background_task[task_key] = False
+            return f"Image building background task with key {task_key} started"
+    #return f"Image building background task with key {task_key} is already running"
+    return jsonify({'message': f'Docker build is ongoing'}), 200
+
+
+
+def background_task1(task_key, some_data):
+    counter = 0
+    group_name = f'task_{task_key}'
+    while not stop_background_task.get(task_key, False):
+        # Replace this with your actual image building logic
+        # For example, send a counter value and some_data over the socket to the group every 5 seconds
+        from backend.app import sio
+        #sio.emit('message', {'message': f'container is fetching {counter}'}, to="kamal")
+        # sio.emit('background_data', {'counter': counter, 'some_data': some_data, 'task_key': task_key}, room=group_name)
+        sleep(1)
+        try:
+            # Import the DockerfileGenerator class
+            from dock_craftsman.dockerfile_generator import DockerfileGenerator
+            from dock_craftsman.docker_image_builder import DockerImageBuilder
+
+            # Instantiate the DockerfileGenerator
+            dockerfile = DockerfileGenerator()
+
+            # Use the official Python 3.11.6 (slim) image
+            dockerfile.from_('python:3.11.6-slim')
+
+            # Set environment variables
+            dockerfile.env('PYTHONDONTWRITEBYTECODE', '1')
+            dockerfile.env('PYTHONUNBUFFERED', '1')
+
+            # Update the package list and install necessary packages
+            dockerfile.apt_install('supervisor')
+            dockerfile.apt_install('nginx')
+            # Get the content of the generated Dockerfile
+            generated_dockerfile = dockerfile.get_content()
+
+            from dock_craftsman.docker_image_builder_socketio import DockerImageBuilderSocketio
+            b = DockerImageBuilderSocketio(docker_socket="unix:///Users/code4mk/.colima/default/docker.sock", socketio=sio, socketio_room='kamal')
+            b.set_platform('linux/amd64')
+            b.set_name('ddman2')
+            b.set_tag('1.0.2')
+            b.set_dockerfile('./Users/code4mk/Documents/GitHub/drf-django/project/django-app/the_dockman/dockerfiles/app.Dockerfile')
+            b.build()
+            
+            print('mk1212')
+            stop_background_task[task_key] = True
+        except Exception as e:
+            stop_background_task[task_key] = True
+            print(f"Error occurred while building Docker image: {e}")
+            
+        # if counter == 5:
+        #     stop_background_task[task_key] = True
+        # counter += 1
+        # sleep(5)
+        
+import subprocess
+def background_task(task_key, some_data):
+    counter = 0
+    group_name = f'task_{task_key}'
+    while not stop_background_task.get(task_key, False):
+        try:
+            import json
+            import os
+
+            # Load JSON data
+            json_data = '''
+            {
+            "data": {
+                "image_name": "dockaman-1",
+                "image_version": "1.0.1",
+                "platform": "linux/amd64",
+                "docker_socket": "unix:///Users/code4mk/.colima/default/docker.sock",
+                "dockerfile_variable_name": "dockerfile_content",
+                "base_path": "/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend",
+                "dockerfile_path": "/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend/docker/dockerfiles/app.Dockerfile"
+            }
+            }
+            '''
+
+            data = json.loads(json_data)
+
+            # Extract necessary information
+            image_name = data['data']['image_name']
+            image_version = data['data']['image_version']
+            platform = data['data']['platform']
+            dockerfile_path = data['data']['dockerfile_path']
+
+            # Generate build-me.py inside base_path
+            build_me_script_path = os.path.join(data['data']['base_path'], 'build-me.py')
+            
+            # Check if build-me.py exists, if not, create it and set permissions
+            if not os.path.exists(build_me_script_path):
+                with open(build_me_script_path, 'w') as build_me_file:
+                    pass  # Creates an empty file if it doesn't exist
+                # Set permissions for read and write (0644)
+                os.chmod(build_me_script_path, 0o644)
+
+            with open(build_me_script_path, 'w') as build_me_file:
+                build_me_file.write('''\
+from dock_craftsman.docker_image_builder import DockerImageBuilder
+
+dockerfile_path = "{}"
+dockerfile_content = ""
+with open(dockerfile_path, 'r') as file:
+    dockerfile_content = file.read()
+
+b = DockerImageBuilder(docker_socket="{}")
+b.set_platform('{}')
+b.set_name('{}')
+b.set_tag('{}')
+b.set_content(dockerfile_content)
+b.build()
+'''.format(dockerfile_path, data['data']['docker_socket'], platform, image_name, image_version))
+
+            print("build-me.py generated successfully at:", build_me_script_path)
+
+
+            # Set up the virtual environment path
+            project_path = '/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend'
+            venv_name = 'dockman_venv'
+            venv_path = os.path.join(project_path, venv_name)
+
+            # Check if virtual environment already exists, if not, create it
+            if not os.path.exists(venv_path):
+                create_venv_cmd = f"python3 -m venv {venv_path}"
+                subprocess.run(create_venv_cmd, shell=True, check=True)
+
+            # Install dock-craftsman inside the virtual environment
+            install_cmd = "/usr/local/bin/pip3 install dock-craftsman"
+            combined_cmd = f"source {venv_path}/bin/activate && pip install dock-craftsman chardet && ./deploy-copy.sh"
+            #subprocess.run(combined_cmd, shell=True, check=True)
+
+            # Run the bash script using subprocess.Popen
+            process = subprocess.Popen(combined_cmd, shell=True, cwd=project_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            from backend.app import sio
+            # Emit real-time messages using Socket.IO
+            for stdout_line in iter(process.stdout.readline, b''):
+                sio.emit('message', {'message': stdout_line.decode()}, to='kamal')
+
+            for stderr_line in iter(process.stderr.readline, b''):
+                sio.emit('message', {'message': stderr_line.decode()}, to='kamal')
+
+            stop_background_task[task_key] = True
+
+        except Exception as e:
+            stop_background_task[task_key] = True
+            print(f"Error occurred while building Docker image: {e}")
+        finally:
+            # Deactivate the virtual environment
+            deactivate_cmd = "deactivate"
+            subprocess.run(deactivate_cmd, shell=True)
+        sleep(1)

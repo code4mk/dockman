@@ -13,9 +13,9 @@ humanize = "*"
 python-dateutil = "*"
 twine = "*"
 wheel = "*"
-dock-craftsman = "*"
 flask-socketio = "*"
 python-engineio = "*"
+dock-craftsman = "*"
 
 [dev-packages]
 

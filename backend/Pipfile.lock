@@ -161,11 +161,11 @@
         },
         "dock-craftsman": {
             "hashes": [
-                "sha256:700ecd5b598226b0c1a796ca8e38a79e852a838a37fde0565380118ff5e3d7ac",
-                "sha256:c703628f5f4a7ec0b7de66efab0a6d3e02867575be56a09c35f68114b6a41774"
+                "sha256:a5467e8ccc91fe5134dd427e164e48d1e1322959eca3d43a7481eac2b706ac47",
+                "sha256:af6861f09bbd9d02f9390db36dcc5c5a023c774fbe9992483d7af7a90f8a2f9d"
             ],
             "index": "pypi",
-            "version": "==0.0.12"
+            "version": "==0.0.16"
         },
         "docker": {
             "hashes": [
@@ -257,7 +257,7 @@
                 "sha256:198f568f3230878cb1b44fbd7975f87906c22336dba2e4a7f05278c281fbd792",
                 "sha256:f4bc4c0c070c490abf4ce96d715f68e95923320370efb66143df00199bb6c100"
             ],
-            "markers": "python_version < '3.10'",
+            "markers": "python_version >= '3.8'",
             "version": "==7.0.2"
         },
         "itsdangerous": {
