@@ -335,7 +335,7 @@ stop_background_task = {}
 @bp.route('docker-build', methods=['POST'])
 def docker_build():
     data = request.form
-    content = data.get('content')
+    app_user_data_path = data.get('app_user_data')
     
     global threads, stop_background_task
     some_data = "Your data here"  # Pass your data as needed
@@ -343,7 +343,7 @@ def docker_build():
     with thread_lock:
         if task_key not in threads or not threads[task_key]['thread'].is_alive():
             from backend.app import sio
-            threads[task_key] = {'thread': sio.start_background_task(background_task, task_key, some_data)}
+            threads[task_key] = {'thread': sio.start_background_task(background_task, task_key, app_user_data_path)}
             stop_background_task[task_key] = False
             return f"Image building background task with key {task_key} started"
     #return f"Image building background task with key {task_key} is already running"
@@ -402,7 +402,7 @@ def background_task1(task_key, some_data):
         # sleep(5)
         
 import subprocess
-def background_task(task_key, some_data):
+def background_task(task_key, app_user_data_path):
     counter = 0
     group_name = f'task_{task_key}'
     while not stop_background_task.get(task_key, False):
@@ -466,12 +466,12 @@ b.build()
             # Set up the virtual environment path
             project_path = '/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend'
             venv_name = 'dockman_venv'
-            venv_path = os.path.join(project_path, venv_name)
-
+            the_user_app_data_path = app_user_data_path.replace(' ', '\ ')
+            venv_path = os.path.join(the_user_app_data_path, venv_name)
             # Check if virtual environment already exists, if not, create it
             if not os.path.exists(venv_path):
-                create_venv_cmd = f"python3 -m venv {venv_path}"
-                subprocess.run(create_venv_cmd, shell=True, check=True)
+                create_venv_cmd1 = f"python3 -m venv {venv_path}"
+                subprocess.run(create_venv_cmd1, shell=True, check=True)
 
             # Install dock-craftsman inside the virtual environment
             install_cmd = "/usr/local/bin/pip3 install dock-craftsman"

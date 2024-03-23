@@ -8,7 +8,7 @@ import path from 'path'
 
 let pythonProcess // Reference to the Python child process
 let the_backend_port: string | number // Variable to store the dynamically allocated port
-let mainWindow
+
 async function createWindow(): Promise<void> {
   console.log('Creating main window...')
 
@@ -24,7 +24,7 @@ async function createWindow(): Promise<void> {
   // Dynamically get an available port
   the_backend_port = await getPort()
 
-  mainWindow = new BrowserWindow({
+  let mainWindow = new BrowserWindow({
     width: 1050,
     height: 670,
     show: false,
@@ -54,9 +54,9 @@ async function createWindow(): Promise<void> {
     shell.openPath(folderPath)
   })
 
-  ipcMain.handle('readDirectory', (event, folderPath) => {
-    const directoryContents = readDirectory(folderPath)
-    return directoryContents
+  ipcMain.handle('getUserDataPath', (event) => {
+    const thePath = getUserDataPath()
+    return thePath
   })
 
   mainWindow.webContents.once('dom-ready', () => {
@@ -88,14 +88,12 @@ async function createWindow(): Promise<void> {
       shell: true,
       stdio: 'inherit'
     })
-    
+
     backendProcess.on('error', (error) => {
       console.error('Error starting backend server:', error)
     })
-    
+
     console.log(`Production mode: Backend is running on port ${the_backend_port}.`)
-    
-    
   }
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -147,45 +145,7 @@ app.on('before-quit', () => {
   shutdown()
 })
 
-interface FileItem {
-  name: string
-  type: 'folder' | 'file'
-  isDirectory: boolean
-  children?: FileItem[]
-  content?: string
-}
 
-function readDirectory(dirPath: string): FileItem {
-  // Normalize the path
-  dirPath = path.normalize(dirPath)
-
-  if (!fs.existsSync(dirPath)) {
-    throw new Error(`Path "${dirPath}" does not exist.`)
-  }
-
-  const stats = fs.statSync(dirPath)
-  const item: FileItem = {
-    name: path.basename(dirPath),
-    type: stats.isDirectory() ? 'folder' : 'file',
-    isDirectory: stats.isDirectory()
-  }
-
-  if (stats.isDirectory()) {
-    const children = fs
-      .readdirSync(dirPath)
-      .map((child) => readDirectory(path.join(dirPath, child)))
-    // Separate folders and files
-    const folders = children.filter((child) => child.type === 'folder')
-    const files = children.filter((child) => child.type === 'file')
-    item.children = folders.concat(files)
-  } else {
-    // Read file content synchronously and add it to the item
-    // try {
-    //   item.content = fs.readFileSync(dirPath, 'utf-8')
-    // } catch (err) {
-    //   console.error(`Error reading file ${dirPath}: ${err}`)
-    // }
-  }
-
-  return item
+function getUserDataPath(): string {
+  return app.getPath('userData')
 }

@@ -16,7 +16,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('api', {
       selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>,
       openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath),
-      readDirectory: (folderPath: string) => ipcRenderer.invoke('readDirectory', folderPath)
+      getUserDataPath: () => ipcRenderer.invoke('getUserDataPath')
     } as CustomAPI)
   } catch (error) {
     console.error(error)
@@ -28,6 +28,6 @@ if (process.contextIsolated) {
   window.api = {
     selectFolder: () => ipcRenderer.invoke('dialog:openDirectory') as Promise<string | undefined>,
     openFinder: (folderPath: string) => ipcRenderer.invoke('openFinder', folderPath),
-    readDirectory: (folderPath: string) => ipcRenderer.invoke('readDirectory', folderPath)
+    getUserDataPath: () => ipcRenderer.invoke('getUserDataPath')
   } as CustomAPI
 }

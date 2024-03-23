@@ -8,10 +8,34 @@ function BuildImageTab(): JSX.Element {
   let theSocket: any = useSocket()
   const [theConsoleData, setTheConsoleData] = useState('kamal')
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
+  const [theUserData, setTheUserData] = useState('')
+
+  useEffect(() => {
+    const fetchDirectoryContents = async () => {
+      if (true) {
+        try {
+          const result = await window?.api.getUserDataPath()
+          console.log(result);
+          setTheUserData(result)
+        } catch (error) {
+          console.error('Error reading directory:', error);
+        }
+      }
+    };
+
+    fetchDirectoryContents();
+
+    return () => {
+      // Cleanup function (if needed)
+    };
+  }, []);
 
   function buildImageSocket(): void {
     console.log('build -image')
-    http.post('/project/docker-build').then((response) => {
+    const formData = new FormData()
+    formData.append('app_user_data', theUserData)
+
+    http.post('/project/docker-build', formData).then((response) => {
       console.log(response)
       setIsTerminalOpen(true)
     })

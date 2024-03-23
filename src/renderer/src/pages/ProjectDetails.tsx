@@ -53,7 +53,7 @@ function ProjectDetails(): JSX.Element {
     const fetchDirectoryContents = async () => {
       if (theProjectData?.project_path) {
         try {
-          const result = await window?.api.readDirectory(theProjectData?.project_path)
+          const result = await window?.api.getUserDataPath()
           console.log(result);
         } catch (error) {
           console.error('Error reading directory:', error);
