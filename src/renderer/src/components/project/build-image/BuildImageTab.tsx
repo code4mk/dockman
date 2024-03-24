@@ -10,6 +10,13 @@ function BuildImageTab(): JSX.Element {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
   const [theUserData, setTheUserData] = useState('')
 
+  const [imageName, setImageName] = useState('')
+  const [imageVersion, setImageVersion] = useState('')
+  const [theCache, setTheCache] = useState('no')
+  const [thePlatform, setThePlatform] = useState('linux/arm64')
+  const [theTarget, setTheTarget] = useState('')
+  const [dockerfilePath, setDockerfilePath] = useState('/the-dockman/dockerfiles/app.Dockerfile')
+
   useEffect(() => {
     const fetchDirectoryContents = async () => {
       if (true) {
@@ -30,10 +37,35 @@ function BuildImageTab(): JSX.Element {
     };
   }, []);
 
+  useEffect(() => {
+    http.get('/project/get-image-build?project_id=2').then((response) => {
+      console.log(response.data)
+      let data: any = response.data
+      setImageName(data.image_name)
+      setImageVersion(data.image_version)
+      setTheCache(data.cache)
+      setThePlatform(data.platform)
+      setTheTarget(data.target)
+      setDockerfilePath(data.dockerfile_path)
+    })
+  },[])
+
   function buildImageSocket(): void {
     console.log('build -image')
     const formData = new FormData()
     formData.append('app_user_data', theUserData)
+    formData.append('project_id', '2')
+    formData.append('image_name', imageName)
+    formData.append('image_version', imageVersion)
+    formData.append('cache', theCache)
+    formData.append('platform', thePlatform)
+    formData.append('target', theTarget)
+    formData.append('dockerfile_path', dockerfilePath)
+
+    http.post('/project/save-image-build', formData).then((response) => {
+      console.log(response)
+      setIsTerminalOpen(true)
+    })
 
     http.post('/project/docker-build', formData).then((response) => {
       console.log(response)
@@ -120,7 +152,7 @@ function BuildImageTab(): JSX.Element {
                   Terminal
                 </button>
               </div>
-              
+
               <div className="flex flex-row flex-wrap">
                 <div className="mr-4" style={{ width: '220px' }}>
                   <div className="mb-2">
@@ -134,8 +166,8 @@ function BuildImageTab(): JSX.Element {
                       required={true}
                       type="text"
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value=""
-                      onInput={(event: any) => console.log(event.target.value)}
+                      value={imageName}
+                      onInput={(event: any) => setImageName(event.target.value)}
                       placeholder="my-project"
                     />
                   </div>
@@ -152,8 +184,8 @@ function BuildImageTab(): JSX.Element {
                       required={true}
                       type="text"
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value=""
-                      onInput={(event: any) => console.log(event.target.value)}
+                      value={imageVersion}
+                      onInput={(event: any) => setImageVersion(event.target.value)}
                       placeholder="1.0.1"
                     />
                   </div>
@@ -168,13 +200,12 @@ function BuildImageTab(): JSX.Element {
                     </label>
                     <div className="">
                       <select
-                        id="cache"
-                        name="cache"
-                        autoComplete="cache"
+                        value={theCache}
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        onChange={(e) => setTheCache(e.target.value)}
                       >
-                        <option>yes</option>
-                        <option>no</option>
+                        <option value="yes">yes</option>
+                        <option value="no">no</option>
                       </select>
                     </div>
                   </div>
@@ -189,13 +220,12 @@ function BuildImageTab(): JSX.Element {
                     </label>
                     <div className="">
                       <select
-                        id="platform"
-                        name="platform"
-                        autoComplete="platform"
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        value={thePlatform}
+                        onChange={(e) => setThePlatform(e.target.value)}
                       >
-                        <option>linux/amd64</option>
-                        <option>linux/arm64</option>
+                        <option value="linux/amd64">linux/amd64</option>
+                        <option value="linux/arm64">linux/arm64</option>
                       </select>
                     </div>
                   </div>
@@ -212,8 +242,8 @@ function BuildImageTab(): JSX.Element {
                       required={true}
                       type="text"
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value=""
-                      onInput={(event: any) => console.log(event.target.value)}
+                      value={theTarget}
+                      onInput={(event: any) => setTheTarget(event.target.value)}
                       placeholder="production"
                     />
                   </div>
@@ -230,8 +260,8 @@ function BuildImageTab(): JSX.Element {
                       required={true}
                       type="text"
                       className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value="/the-dockman/dockerfiles/app.Dockerfile"
-                      onInput={(event: any) => console.log(event.target.value)}
+                      value={dockerfilePath}
+                      onInput={(event: any) => setDockerfilePath(event.target.value)}
                       placeholder="production"
                     />
                   </div>

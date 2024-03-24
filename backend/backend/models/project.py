@@ -19,3 +19,13 @@ class ProjectDockerfile(db.Model):
     title = db.Column(db.String(100), nullable=True)
     stage = db.Column(db.String(255), nullable=True)
     data = db.Column(db.String(255), nullable=True)
+    
+class ProjectDockerBuild(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.String(150), nullable=False)
+    image_name = db.Column(db.String(150), nullable=False)
+    image_version = db.Column(db.String(150), nullable=False)
+    cache = db.Column(db.String(150), nullable=False)
+    platform = db.Column(db.String(150), nullable=False)
+    target = db.Column(db.String(150), nullable=False)
+    dockerfile_path = db.Column(db.String(150), nullable=False)

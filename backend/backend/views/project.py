@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, g
 from backend.models import db
-from backend.models.project import Project, ProjectDockerfile
+from backend.models.project import Project, ProjectDockerfile, ProjectDockerBuild
 from dock_craftsman.dockerfile_generator import DockerfileGenerator
 from itertools import groupby
 import json
@@ -324,6 +324,88 @@ def get_nginx_data():
     except requests.exceptions.RequestException as e:
         return f'Request failed: {str(e)}', 500
 
+@bp.route('/save-image-build', methods=['POST'])
+def save_image_build():
+    # Extract data from form-data
+    project_id = request.form.get('project_id')
+
+    # Check if the project_id exists
+    project = ProjectDockerBuild.query.filter_by(project_id=project_id).first()
+
+    if project:
+        # Project exists, update the project
+        project.image_name = request.form.get('image_name')
+        project.image_version = request.form.get('image_version')
+        project.cache = request.form.get('cache')
+        project.platform = request.form.get('platform')
+        project.target = request.form.get('target')
+        project.dockerfile_path = request.form.get('dockerfile_path')
+        # Update other fields as needed
+    else:
+        # Project does not exist, create a new project
+        image_name = request.form.get('image_name')
+        image_version = request.form.get('image_version')
+        cache = request.form.get('cache')
+        platform = request.form.get('platform')
+        target = request.form.get('target')
+        dockerfile_path = request.form.get('dockerfile_path')
+
+        # Create a new Project instance
+        project = ProjectDockerBuild(
+            project_id=project_id,
+            image_name=image_name,
+            image_version=image_version,
+            cache=cache,
+            platform=platform,
+            target=target,
+            dockerfile_path=dockerfile_path
+        )
+
+        # Add the new project to the database
+        db.session.add(project)
+
+    # Commit changes to the database
+    db.session.commit()
+
+    # Return the project data
+    return jsonify({
+        "message": "Project saved successfully",
+        "project": {
+            "project_id": project.project_id,
+            "image_name": project.image_name,
+            "image_version": project.image_version,
+            "cache": project.cache,
+            "platform": project.platform,
+            "target": project.target,
+            "dockerfile_path": project.dockerfile_path
+            # Add other fields as needed
+        }
+    })
+
+@bp.route('/get-image-build', methods=['GET'])
+def get_image_build():
+    # Extract project_id from the request parameters
+    project_id = request.args.get('project_id')
+
+    # Query the database for the project with the given project_id
+    project = ProjectDockerBuild.query.filter_by(project_id=project_id).first()
+
+    if project:
+        # Project found, return its details
+        return jsonify({
+            'project_id': project.id,
+            'image_name': project.image_name,
+            'image_version': project.image_version,
+            'cache': project.cache,
+            'platform': project.platform,
+            'target': project.target,
+            'dockerfile_path': project.dockerfile_path
+            # Add other fields as needed
+        })
+    else:
+        # Project not found, return an error message
+        return jsonify({'error': 'Project not found'})
+
 
 from threading import Lock
 from time import sleep
@@ -337,13 +419,34 @@ def docker_build():
     data = request.form
     app_user_data_path = data.get('app_user_data')
     
+    # Extract project_id from the request parameters
+    project_id = data.get('project_id')
+
+    # Query the database for the project with the given project_id
+    project = ProjectDockerBuild.query.filter_by(project_id=project_id).first()
+    
+    a = {
+         'data': {
+            'project_id': project.id,
+            'image_name': project.image_name,
+            'image_version': project.image_version,
+            'cache': project.cache,
+            'platform': project.platform,
+            'target': project.target,
+            'dockerfile_path': project.dockerfile_path,
+            'base_path': '/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend',
+            'docker_socket': 'unix:///Users/code4mk/.colima/default/docker.sock'
+         }
+    }
+    print(str(a))
+    
     global threads, stop_background_task
     some_data = "Your data here"  # Pass your data as needed
     task_key = 'kamal'
     with thread_lock:
         if task_key not in threads or not threads[task_key]['thread'].is_alive():
             from backend.app import sio
-            threads[task_key] = {'thread': sio.start_background_task(background_task, task_key, app_user_data_path)}
+            threads[task_key] = {'thread': sio.start_background_task(background_task, task_key, app_user_data_path, a)}
             stop_background_task[task_key] = False
             return f"Image building background task with key {task_key} started"
     #return f"Image building background task with key {task_key} is already running"
@@ -402,16 +505,17 @@ def background_task1(task_key, some_data):
         # sleep(5)
         
 import subprocess
-def background_task(task_key, app_user_data_path):
+def background_task(task_key, app_user_data_path, the_json_data):
     counter = 0
     group_name = f'task_{task_key}'
     while not stop_background_task.get(task_key, False):
         try:
             import json
             import os
+            
 
             # Load JSON data
-            json_data = '''
+            json_data1 = '''
             {
             "data": {
                 "image_name": "dockaman-1",
@@ -425,7 +529,7 @@ def background_task(task_key, app_user_data_path):
             }
             '''
 
-            data = json.loads(json_data)
+            data = (the_json_data)
 
             # Extract necessary information
             image_name = data['data']['image_name']
