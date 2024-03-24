@@ -2,7 +2,7 @@ import BaseLayout from '@layouts/Base'
 import { http } from '@utils/http/index'
 import DockerfileGenerateModal from '@components/project/DockerfileGenerateModal'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import DockerfileEditor from '@components/project/DockerfileEditor'
@@ -23,9 +23,12 @@ function ProjectDetails(): JSX.Element {
     dockerfileGenerateModal: false
   })
 
-  function getProjectData(id: string | number): void {
+  const { projectId } = useParams()
+
+  function getProjectData(id: any): void {
     http.get(`/project/get/${id}`).then((response) => {
       setTheProjectData(response.data.project)
+      console.log(response.data)
     })
   }
 
@@ -46,8 +49,8 @@ function ProjectDetails(): JSX.Element {
 
   useEffect(() => {
     getData()
-    getProjectData(1)
-  }, [])
+    getProjectData(projectId)
+  }, [projectId])
 
   useEffect(() => {
     const fetchDirectoryContents = async () => {
