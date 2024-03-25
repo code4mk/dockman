@@ -22,25 +22,23 @@ function BuildImageTab(): JSX.Element {
       if (true) {
         try {
           const result = await window?.api.getUserDataPath()
-          console.log(result);
           setTheUserData(result)
         } catch (error) {
-          console.error('Error reading directory:', error);
+          console.error('Error reading directory:', error)
         }
       }
-    };
+    }
 
-    fetchDirectoryContents();
+    fetchDirectoryContents()
 
     return () => {
       // Cleanup function (if needed)
-    };
-  }, []);
+    }
+  }, [])
 
   useEffect(() => {
     http.get('/project/get-image-build?project_id=2').then((response) => {
-      console.log(response.data)
-      let data: any = response.data
+      const data: any = response.data
       setImageName(data.image_name)
       setImageVersion(data.image_version)
       setTheCache(data.cache)
@@ -48,10 +46,10 @@ function BuildImageTab(): JSX.Element {
       setTheTarget(data.target)
       setDockerfilePath(data.dockerfile_path)
     })
-  },[])
+  }, [])
 
   function buildImageSocket(): void {
-    console.log('build -image')
+    setTheConsoleData('')
     const formData = new FormData()
     formData.append('app_user_data', theUserData)
     formData.append('project_id', '2')
@@ -61,52 +59,57 @@ function BuildImageTab(): JSX.Element {
     formData.append('platform', thePlatform)
     formData.append('target', theTarget)
     formData.append('dockerfile_path', dockerfilePath)
+    formData.append('socket_room_name', 'project-1')
 
     http.post('/project/save-image-build', formData).then((response) => {
-      console.log(response)
-      setIsTerminalOpen(true)
+      //console.log(response)
+      // setIsTerminalOpen(true)
+      http.post('/project/docker-build', formData).then((response) => {
+        //console.log(response)
+        // setIsTerminalOpen(true)
+      })
     })
 
-    http.post('/project/docker-build', formData).then((response) => {
-      console.log(response)
-      setIsTerminalOpen(true)
-    })
+    
   }
 
-  // useEffect(() => {
-  //   const currentRoom: string = 'kamal'
-  //   if (theSocket) {
-  //     theSocket.on('connect', () => {
-  //       console.log('SocketIO connected')
-  //       theSocket.emit('joinRoom', currentRoom)
-  //       theSocket.on('message', (data) => {
-  //         console.log(data)
-  //         setTheConsoleData((prevData) => prevData + '\n' + data.message)
-  //       })
-  //     })
-  //   }
+  useEffect(() => {
+    const currentRoom: string = 'project-1'
+    if (theSocket) {
+      theSocket.on('connect', () => {
+        console.log('SocketIO connected')
+        theSocket.emit('joinRoom', currentRoom)
+        theSocket.on('message', (data) => {
+          setTheConsoleData((prevData) => prevData + '\n' + data.message)
+        })
 
-  //   const handleBeforeUnload = () => {
-  //     if (theSocket) {
-  //       if (currentRoom) {
-  //         theSocket.emit('leaveRoom', currentRoom) // Leave the current room before disconnecting
-  //       }
-  //       // theSocket.disconnect()
-  //       // theSocket = null
-  //     }
-  //   }
+        theSocket.on('build_complete', (data) => {
+          console.log(data)
+        })
+      })
+    }
 
-  //   // Cleanup function
-  //   return () => {
-  //     if (theSocket) {
-  //       handleBeforeUnload()
-  //     }
-  //   }
-  // }, [theSocket])
+    const handleBeforeUnload = () => {
+      if (theSocket) {
+        if (currentRoom) {
+          // theSocket.emit('leaveRoom', currentRoom) // Leave the current room before disconnecting
+        }
+        // theSocket.disconnect()
+        // theSocket = null
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (theSocket) {
+        handleBeforeUnload()
+      }
+    }
+  }, [theSocket])
 
   return (
     <>
-      <Terminal terminalOpen={isTerminalOpen} onOverlayClose={(data) => setIsTerminalOpen(data)} />
+      {/* <Terminal terminalOpen={isTerminalOpen} onOverlayClose={(data) => setIsTerminalOpen(data)} /> */}
 
       <div className="flex">
         <div className="flex w-2/12 md:mb-0 bg-white mt-2 shadow rounded min-h-[70vh] ">
@@ -136,8 +139,11 @@ function BuildImageTab(): JSX.Element {
             <>
               <div className="mb-4 flex flex-row">
                 <p className="mr-4">Docker Image build</p>
-                <button className="rounded-md bg-blue-500 px-4 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                  Save
+                <button
+                  onClick={() => setTheConsoleData('')}
+                  className="rounded-md bg-blue-500 px-4 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  clear
                 </button>
                 <button
                   onClick={() => buildImageSocket()}
@@ -281,6 +287,10 @@ function BuildImageTab(): JSX.Element {
               <p>{selectedMenu} coming soon</p>
             </>
           )}
+
+          <div>
+            <pre>{theConsoleData}</pre>
+          </div>
         </div>
       </div>
     </>
