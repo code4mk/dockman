@@ -1,7 +1,8 @@
 import { http } from '@utils/http'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import useSocket from '@utils/hooks/useSocket'
 import Terminal from './Terminal'
+import { CheckCircleIcon } from '@heroicons/react/24/outline'
 
 function BuildImageTab(): JSX.Element {
   const [selectedMenu, setSelectedMenu] = useState('builder')
@@ -9,6 +10,7 @@ function BuildImageTab(): JSX.Element {
   const [theConsoleData, setTheConsoleData] = useState('kamal')
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
   const [theUserData, setTheUserData] = useState('')
+  const [theDockerPushData, setTheDockerPushData] = useState('')
 
   const [imageName, setImageName] = useState('')
   const [imageVersion, setImageVersion] = useState('')
@@ -69,43 +71,45 @@ function BuildImageTab(): JSX.Element {
         // setIsTerminalOpen(true)
       })
     })
-
-    
   }
 
-  useEffect(() => {
-    const currentRoom: string = 'project-1'
-    if (theSocket) {
-      theSocket.on('connect', () => {
-        console.log('SocketIO connected')
-        theSocket.emit('joinRoom', currentRoom)
-        theSocket.on('message', (data) => {
-          setTheConsoleData((prevData) => prevData + '\n' + data.message)
-        })
+  // useEffect(() => {
+  //   const currentRoom: string = 'project-1'
+  //   if (theSocket) {
+  //     theSocket.on('connect', () => {
+  //       console.log('SocketIO connected')
+  //       theSocket.emit('joinRoom', currentRoom)
+  //       theSocket.on('message', (data) => {
+  //         setTheConsoleData((prevData) => prevData + '\n' + data.message)
+  //       })
 
-        theSocket.on('build_complete', (data) => {
-          console.log(data)
-        })
-      })
-    }
+  //       theSocket.on('build_complete', (data) => {
+  //         console.log(data)
+  //       })
 
-    const handleBeforeUnload = () => {
-      if (theSocket) {
-        if (currentRoom) {
-          // theSocket.emit('leaveRoom', currentRoom) // Leave the current room before disconnecting
-        }
-        // theSocket.disconnect()
-        // theSocket = null
-      }
-    }
+  //       theSocket.on('docker_push_status', (data) => {
+  //         setTheDockerPushData((prevData) => prevData + '\n' + data)
+  //       })
+  //     })
+  //   }
 
-    // Cleanup function
-    return () => {
-      if (theSocket) {
-        handleBeforeUnload()
-      }
-    }
-  }, [theSocket])
+  //   const handleBeforeUnload = () => {
+  //     if (theSocket) {
+  //       if (currentRoom) {
+  //         // theSocket.emit('leaveRoom', currentRoom) // Leave the current room before disconnecting
+  //       }
+  //       // theSocket.disconnect()
+  //       // theSocket = null
+  //     }
+  //   }
+
+  //   // Cleanup function
+  //   return () => {
+  //     if (theSocket) {
+  //       handleBeforeUnload()
+  //     }
+  //   }
+  // }, [theSocket])
 
   return (
     <>
@@ -140,7 +144,10 @@ function BuildImageTab(): JSX.Element {
               <div className="mb-4 flex flex-row">
                 <p className="mr-4">Docker Image build</p>
                 <button
-                  onClick={() => setTheConsoleData('')}
+                  onClick={() => {
+                    setTheConsoleData('')
+                    setTheDockerPushData('')
+                  }}
                   className="rounded-md bg-blue-500 px-4 py-1 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   clear
@@ -273,6 +280,8 @@ function BuildImageTab(): JSX.Element {
                   </div>
                 </div>
               </div>
+
+              <Terminal />
             </>
           )}
 
@@ -287,10 +296,6 @@ function BuildImageTab(): JSX.Element {
               <p>{selectedMenu} coming soon</p>
             </>
           )}
-
-          <div>
-            <pre>{theConsoleData}</pre>
-          </div>
         </div>
       </div>
     </>

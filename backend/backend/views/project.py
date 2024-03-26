@@ -1,11 +1,13 @@
+import os
+import json
+import requests
 from flask import Blueprint, request, jsonify, g
 from backend.models import db
 from backend.models.project import Project, ProjectDockerfile, ProjectDockerBuild
 from dock_craftsman.dockerfile_generator import DockerfileGenerator
 from itertools import groupby
-import json
 from json.decoder import JSONDecodeError
-import requests
+
 
 bp = Blueprint('project', __name__)
 
@@ -454,28 +456,12 @@ def docker_build():
 
 
 import subprocess
-def background_task(task_key, app_user_data_path, the_json_data, the_socket_room):
+def background_task(task_key, app_user_data_path, the_json_data, the_socket_room, is_image_push = None):
     while not stop_background_task.get(task_key, False):
         try:
-            import json
-            import os
+            from backend.app import sio
+            sio.emit('build_started', 'started', to=the_socket_room)
             
-
-            # Load JSON data
-            json_data1 = '''
-            {
-            "data": {
-                "image_name": "dockaman-1",
-                "image_version": "1.0.1",
-                "platform": "linux/amd64",
-                "docker_socket": "unix:///Users/code4mk/.colima/default/docker.sock",
-                "dockerfile_variable_name": "dockerfile_content",
-                "base_path": "/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend",
-                "dockerfile_path": "/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend/docker/dockerfiles/app.Dockerfile"
-            }
-            }
-            '''
-
             data = (the_json_data)
 
             # Extract necessary information
@@ -528,7 +514,7 @@ b.build()
 
             # Run the bash script using subprocess.Popen
             process = subprocess.Popen(combined_cmd, shell=True, cwd=project_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            from backend.app import sio
+            
 
             sio.emit('build_start', 'build start', to=the_socket_room)
             
@@ -538,7 +524,12 @@ b.build()
             for stderr_line in iter(process.stderr.readline, b''):
                 sio.emit('message', {'message': stderr_line.decode()}, to=the_socket_room)
             
-            sio.emit('build_complete', 'build complete', to=the_socket_room)
+            sio.emit('build_completed', 'completed', to=the_socket_room)
+            
+            if is_image_push == None:
+                print('docker image pushing')
+                docker_push(sio, the_socket_room=the_socket_room, image_name=image_name, image_version=image_version, project_path=project_path)
+            
             stop_background_task[task_key] = True
 
         except Exception as e:
@@ -546,3 +537,57 @@ b.build()
             print(f"Error occurred while building Docker image: {e}")
             
         sleep(1)
+
+def docker_push(sio, the_socket_room, image_name, image_version, project_path):
+    region = ""
+    profile = ""
+    ecr_url = ""
+    repo_name = image_name
+    image_versions = [image_version]
+
+    try:
+        # Set AWS credentials as environment variables
+        os.environ['AWS_DEFAULT_REGION'] = region
+        os.environ['AWS_PROFILE'] = profile
+        the_docker_bin = '/opt/homebrew/bin/docker'
+        the_aws_bin = '/opt/homebrew/bin/aws'
+
+        sio.emit('push_started', 'started', to=the_socket_room)
+        # Execute login command
+        login_cmd = f"{the_aws_bin} ecr get-login-password | {the_docker_bin} login --username AWS --password-stdin {ecr_url}"
+        login_process = subprocess.Popen(login_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ.copy(), cwd=project_path)
+
+        # Send real-time login logs
+        for line in login_process.stdout:
+            sio.emit('docker_push_status', line.decode().strip(), to=the_socket_room)
+
+        login_process.wait()
+
+        # Perform Docker operations for each version
+        for image_version in image_versions:
+            tag_cmd = f" {the_docker_bin} tag {repo_name}:{image_version} {ecr_url}/{repo_name}:{image_version}"
+            tag_process = subprocess.Popen(tag_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ.copy(), cwd=project_path)
+
+            # Send real-time tagging logs
+            for line in tag_process.stdout:
+                sio.emit('docker_push_status', line.decode().strip(), to=the_socket_room)
+
+            tag_process.wait()
+
+            push_cmd = f"{the_docker_bin} push {ecr_url}/{repo_name}:{image_version}"
+            push_process = subprocess.Popen(push_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ.copy(), cwd=project_path)
+
+            # Send real-time pushing logs
+            for line in push_process.stdout:
+                sio.emit('docker_push_status', line.decode().strip(), to=the_socket_room)
+
+            push_process.wait()
+
+        # Emit success message after all versions are pushed
+        sio.emit('docker_push_status', "Docker push process completed successfully", to=the_socket_room)
+        sio.emit('push_completed', 'completed', to=the_socket_room)
+    except Exception as e:
+        # Emit error message if subprocess fails
+        sio.emit('docker_push_status', f"Error: {e}", to=the_socket_room)
+    
+    return "Docker push process completed. Check real-time updates."
