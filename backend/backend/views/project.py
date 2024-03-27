@@ -7,7 +7,8 @@ from backend.models.project import Project, ProjectDockerfile, ProjectDockerBuil
 from dock_craftsman.dockerfile_generator import DockerfileGenerator
 from itertools import groupby
 from json.decoder import JSONDecodeError
-
+from datetime import datetime
+import uuid
 
 bp = Blueprint('project', __name__)
 
@@ -16,6 +17,7 @@ def create_project():
     # Extract data from form-data
     name = request.form.get('project_name')
     project_path = request.form.get('project_path')
+    has_registry = request.form.get('has_registry')
     # template_name = request.form.get('template_name')
     # dockerfile_path = request.form.get('dockerfile_path')
 
@@ -23,8 +25,9 @@ def create_project():
     new_project = Project(
         name=name,
         project_path=project_path,
-        # template_name=template_name,
-        # dockerfile_path=dockerfile_path
+        owner_id = 'd2e88f60-2c2e-4bc9-ae4e-8a3427b00931',
+        created_at = datetime.now(),
+        has_registry = True if has_registry.lower() == 'yes' else False
     )
 
     # Add the new project to the database
@@ -41,8 +44,6 @@ def create_project():
             'project_id': added_project.id,
             'name': added_project.name,
             'project_path': added_project.project_path,
-            # 'template_name': added_project.template_name,
-            # 'dockerfile_path': added_project.dockerfile_path
         })
     else:
         # Failed to add the project
@@ -51,16 +52,13 @@ def create_project():
 @bp.route('/get-all', methods=['GET'])
 def get_all_projects():
     projects = Project.query.all()
-    project_list = [{'id': project.id, 'name': project.name, 'project_path': project.project_path,
-                     'template_name': project.template_name, 'dockerfile_path': project.dockerfile_path}
-                    for project in projects]
+    project_list = [{'id': str(project.id), 'name': project.name, 'project_path': project.project_path} for project in projects]
     return jsonify({'data': project_list})
 
-@bp.route('/get/<int:project_id>', methods=['GET'])
+@bp.route('/get/<project_id>', methods=['GET'])
 def get_single_project(project_id):
-    project = Project.query.get_or_404(project_id)
-    project_data = {'id': project.id, 'name': project.name, 'project_path': project.project_path,
-                    'template_name': project.template_name, 'dockerfile_path': project.dockerfile_path}
+    project = Project.query.get_or_404(str(project_id))
+    project_data = {'id': str(project.id), 'name': project.name, 'project_path': project.project_path,}
     return jsonify({'project': project_data})
 
 @bp.route('/edit/<int:project_id>', methods=['PUT'])

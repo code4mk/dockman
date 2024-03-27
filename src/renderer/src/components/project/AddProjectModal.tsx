@@ -23,6 +23,7 @@ function AddProjectModal({
   const [openModal, setOpenModal] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [projectPath, setProjectPath] = useState('')
+  const [hasRegistry, setHasRegistry] = useState('yes')
 
   useEffect(() => {
     if (modalName === 'addProjectModal') {
@@ -42,6 +43,7 @@ function AddProjectModal({
     const formData = new FormData()
     formData.append('project_name', projectName)
     formData.append('project_path', projectPath)
+    formData.append('has_registry', hasRegistry)
 
     http.post('/project/create', formData).then((response: any) => {
       modalClose()
@@ -105,7 +107,7 @@ function AddProjectModal({
                 <div className="text-center sm:mt-1">
                   <div className="">
                     <div className="text-sm text-gray-500 py-8">
-                      <div className="mb-4">
+                      <div className="">
                         <label
                           htmlFor="content-name"
                           className="mb-2 text-left block text-sm font-medium text-gray-700"
@@ -121,7 +123,7 @@ function AddProjectModal({
                           placeholder="Your project name"
                         />
                       </div>
-                      <div className="mb-4">
+                      <div className="mt-4">
                         <label
                           htmlFor="content-name"
                           className="mb-2 text-left block text-sm font-medium text-gray-700"
@@ -135,7 +137,9 @@ function AddProjectModal({
                             className="flex-1 block w-full border  border-gray-300 rounded-tl-md rounded-bl-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                             // className="py-3 px-4 block w-full border-gray-300 shadow-sm rounded-s-lg text-sm focus:z-10 focus:border-teal-500 focus:ring-teal-500   dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
                             value={projectPath}
-                            onInput={(event: any) => {console.log("")}}
+                            onInput={(event: any) => {
+                              console.log('')
+                            }}
                             placeholder="Pick your project"
                           />
                           <button
@@ -150,6 +154,22 @@ function AddProjectModal({
                             <FolderIcon className="flex-shrink-0 size-4" />
                           </button>
                         </div>
+                      </div>
+                      <div className="mt-4">
+                        <label
+                          htmlFor="content-name"
+                          className="mb-2 text-left block text-sm font-medium text-gray-700"
+                        >
+                          Docker Registry <span className="text-red-600">*</span>
+                        </label>
+                        <select
+                          onChange={(event: any) => setHasRegistry(event.target.value)}
+                          className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        >
+                          <option value="">Select option</option>
+                          <option value="yes">yes</option>
+                          <option value="no">no</option>
+                        </select>
                       </div>
                     </div>
                   </div>

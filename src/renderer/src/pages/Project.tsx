@@ -63,7 +63,7 @@ function Project(): JSX.Element {
         <div className="flex items-center ">
           {/* Left - Title */}
           <div className="mt-5 mr-5">
-            <h1 className="text-2xl font-bold">Container List</h1>
+            <h1 className="text-2xl font-bold">Project List</h1>
           </div>
 
           {/* Middle - Filter */}
