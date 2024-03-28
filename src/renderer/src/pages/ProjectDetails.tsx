@@ -8,6 +8,8 @@ import toast from 'react-hot-toast'
 import DockerfileEditor from '@components/project/DockerfileEditor'
 import NginxTab from '@components/project/NginxTab'
 import BuildImageTab from '@components/project/build-image/BuildImageTab'
+import { useAppSelector, useAppDispatch } from '@utils/redux/kit'
+import { projectAction } from '@store/global'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -24,11 +26,13 @@ function ProjectDetails(): JSX.Element {
   })
 
   const { projectId } = useParams()
+  const getReduxState = useAppSelector((state: any) => state.global.projectDetails)
+  const dispatch = useAppDispatch()
 
   function getProjectData(id: any): void {
     http.get(`/project/get/${id}`).then((response) => {
       setTheProjectData(response.data.project)
-      console.log(response.data)
+      dispatch(projectAction({ project: response.data.project }))
     })
   }
 
@@ -50,6 +54,7 @@ function ProjectDetails(): JSX.Element {
   useEffect(() => {
     getData()
     getProjectData(projectId)
+    console.log(getReduxState)
   }, [projectId])
 
   useEffect(() => {
@@ -57,7 +62,7 @@ function ProjectDetails(): JSX.Element {
       if (theProjectData?.project_path) {
         try {
           const result = await window?.api.getUserDataPath()
-          console.log(result);
+          // console.log(result);
         } catch (error) {
           console.error('Error reading directory:', error);
         }
@@ -73,7 +78,7 @@ function ProjectDetails(): JSX.Element {
 
   useEffect(() => {
     window.electron.ipcRenderer.on('directoryChanged', (event, item) => {
-      console.log(item);
+      //console.log(item);
       // Perform actions you want to do when a file changes
     })
 
@@ -103,7 +108,6 @@ function ProjectDetails(): JSX.Element {
 
   function handleDeleteDockerfile(a, id): void {
     http.delete(`/project/delete-dockerfile/${id}`).then((response) => {
-      console.log(response.data)
       getData()
     })
   }

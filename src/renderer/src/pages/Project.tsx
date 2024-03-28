@@ -19,7 +19,6 @@ function Project(): JSX.Element {
 
   function getData(): void {
     http.get('/project/get-all').then((response) => {
-      console.log(response.data?.data)
       setProjects(response.data?.data ?? [])
     })
   }

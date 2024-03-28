@@ -17,7 +17,6 @@ function DockerfileEditor({ content, language }: TheProps): JSX.Element {
   }, [content])
 
   const handleContentChange = (newValue: any, event: any) => {
-    console.log(newValue)
     setTheData(newValue)
   }
 

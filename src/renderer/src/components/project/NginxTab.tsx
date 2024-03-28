@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react'
 import NginxEditor from './NginxEditor'
 import Select from 'react-select'
 import toast from 'react-hot-toast'
+import { useAppSelector } from '@utils/redux/kit'
 
 function NginxTab(): JSX.Element {
+  const getProjectDetail = useAppSelector((state: any) => state.global.projectDetails)
   const [nginxLists, setNginxLists] = useState([] as any)
   const [selectedNginx, setSelectedNginx] = useState(null)
   const [nginxData, setNginxData] = useState('')
@@ -13,8 +15,10 @@ function NginxTab(): JSX.Element {
     http.get('/project/get-nginx-lists').then((response) => {
       setNginxLists(response.data?.data)
     })
-    getNginxData()
-  }, [])
+    if (getProjectDetail?.project_path) {
+      getNginxData()
+    }
+  }, [getProjectDetail])
 
   const options = nginxLists.map((item: any) => ({
     value: item.path,
@@ -30,10 +34,8 @@ function NginxTab(): JSX.Element {
   }
 
   function getNginxData(): void {
-    let a: any =
-      '/Users/code4mk/Documents/GitHub/drf-django/project/django-app' +
-      '/the_dockman/config/nginx/app.conf'
-    http.get(`project/get-file-data?path=${a}`).then((response) => {
+    const the_path: string = getProjectDetail?.project_path + '/the_dockman/config/nginx/app.conf'
+    http.get(`project/get-file-data?path=${the_path}`).then((response) => {
       setNginxData(response.data.file_data)
     })
   }
@@ -46,7 +48,7 @@ function NginxTab(): JSX.Element {
     console.log(nginxData)
     const formData = new FormData()
     formData.append('content', nginxData)
-    formData.append('project_path', '/Users/code4mk/Documents/GitHub/drf-django/project/django-app')
+    formData.append('project_path', getProjectDetail?.project_path)
     formData.append('the_type', 'nginx')
     http.post('/project/save-content', formData).then((response) => {
       toast.success(response.data?.message, {
