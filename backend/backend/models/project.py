@@ -41,6 +41,9 @@ class ProjectDockerBuild(db.Model):
     target = db.Column(db.String(150), nullable=False)
     dockerfile_path = db.Column(db.String(150), nullable=False)
     created_at = db.Column(DateTime, nullable=False, default=datetime.now)
+    
+    def as_dict(self):
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
 class ProjectDockerBuildArgument(db.Model):
     id = db.Column(String(36), primary_key=True, default=str(uuid.uuid4()))
@@ -49,3 +52,10 @@ class ProjectDockerBuildArgument(db.Model):
     key = db.Column(db.String(255), nullable=False)
     value = db.Column(db.Text, nullable=False)
     created_at = db.Column(DateTime, nullable=False, default=datetime.now)
+    
+    
+class ProjectEnvironment(db.Model):
+    id = Column(String(36), primary_key=True, default=str(uuid.uuid4()))
+    name = Column(String(150), nullable=False)
+    project_id = db.Column(String(36), nullable=False)
+    created_at = Column(DateTime, default=func.now())

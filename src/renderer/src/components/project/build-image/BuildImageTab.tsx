@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import useSocket from '@utils/hooks/useSocket'
 import Terminal from './Terminal'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import TheEnvironment from './TheEnvironment'
 
 function BuildImageTab(): JSX.Element {
   const [selectedMenu, setSelectedMenu] = useState('builder')
@@ -287,7 +288,7 @@ function BuildImageTab(): JSX.Element {
 
           {selectedMenu === 'environment' && (
             <>
-              <p>{selectedMenu} coming soon</p>
+              <TheEnvironment />
             </>
           )}
 

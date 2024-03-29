@@ -3,7 +3,7 @@ import json
 import requests
 from flask import Blueprint, request, jsonify, g
 from backend.models import db
-from backend.models.project import Project, ProjectDockerfile, ProjectDockerBuild
+from backend.models.project import Project, ProjectDockerfile, ProjectEnvironment, ProjectDockerBuild
 from dock_craftsman.dockerfile_generator import DockerfileGenerator
 from itertools import groupby
 from json.decoder import JSONDecodeError
@@ -97,6 +97,109 @@ def delete_project(project_id):
 
     return jsonify({'message': 'Project deleted successfully'})
 
+@bp.route('/environment/create', methods=['POST'])
+def env_create():
+    name = request.form.get('env_name')
+    project_id = request.form.get('project_id')
+
+    new_item = ProjectEnvironment(
+        id = str(uuid.uuid4()),
+        name=name,
+        project_id=project_id,
+        created_at = datetime.now(),
+    )
+
+    db.session.add(new_item)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'environment created successfully',
+    })
+    
+@bp.route('/environment/get-all', methods=['GET'])
+def get_all_env():
+    projects = ProjectEnvironment.query.all()
+    project_list = [{'id': str(project.id), 'name': project.name, 'project_id': project.id} for project in projects]
+    return jsonify({'data': project_list})
+
+@bp.route('/environment/get/<env_id>', methods=['GET'])
+def get_single_env(env_id):
+    project = ProjectEnvironment.query.get_or_404(str(env_id))
+    project_data = {'id': str(project.id), 'name': project.name, 'project_id': project.project_id,}
+    return jsonify({'data': project_data})
+
+@bp.route('/environment/delete/<env_id>', methods=['DELETE'])
+def delete_env(env_id):
+    project = ProjectEnvironment.query.get_or_404(str(env_id))
+    db.session.delete(project)
+    db.session.commit()
+
+    return jsonify({'message': 'Environment deleted successfully'})
+
+@bp.route('/environment/data-save', methods=['POST'])
+def env_data_save():
+    # Extract data from form-data
+    env_id = request.form.get('environment_id')
+
+    # Check if the project_id exists
+    project = ProjectDockerBuild.query.filter_by(environment_id=env_id).first()
+
+    if project:
+        # Project exists, update the project
+        project.image_name = request.form.get('image_name')
+        project.cache = request.form.get('cache')
+        project.platform = request.form.get('platform')
+        project.target = request.form.get('target')
+        project.dockerfile_path = request.form.get('dockerfile_path')
+        project.project_id = request.form.get('project_id')
+        project.registry_id = '48c15775-5233-46f0-929a-8d99476064bb'
+        project.environment_id = env_id
+        # Update other fields as needed
+    else:
+        # Project does not exist, create a new project
+        image_name = request.form.get('image_name')
+        cache = request.form.get('cache')
+        platform = request.form.get('platform')
+        target = request.form.get('target')
+        dockerfile_path = request.form.get('dockerfile_path')
+        project_id = request.form.get('project_id')
+
+        # Create a new Project instance
+        project = ProjectDockerBuild(
+            id = str(uuid.uuid4()),
+            environment_id = env_id,
+            project_id=project_id,
+            image_name=image_name,
+            cache=cache,
+            platform=platform,
+            target=target,
+            dockerfile_path=dockerfile_path,
+            registry_id = '48c15775-5233-46f0-929a-8d99476064bb'
+        )
+
+        # Add the new project to the database
+        db.session.add(project)
+
+    # Commit changes to the database
+    db.session.commit()
+
+    # Return the project data
+    return jsonify({
+        "message": "saved successfully",
+    })
+
+
+@bp.route('/environment/data/<env_id>', methods=['GET'])
+def get_env_data(env_id):
+    # Query the ProjectDockerBuild object based on the environment_id
+    project = ProjectDockerBuild.query.filter_by(environment_id=str(env_id)).first()
+
+    if project:
+        # Convert the ProjectDockerBuild object to a dictionary using as_dict() method
+        project_data = project.as_dict()
+        return jsonify({'data': project_data})
+    else:
+        return jsonify({'error': 'Project environment not found'}), 404
 
 @bp.route('/create-dockerfile', methods=['POST'])
 def create_project_dockerfile():
