@@ -116,9 +116,9 @@ def env_create():
         'message': 'environment created successfully',
     })
     
-@bp.route('/environment/get-all', methods=['GET'])
-def get_all_env():
-    projects = ProjectEnvironment.query.all()
+@bp.route('/environment/<project_id>/get-all', methods=['GET'])
+def get_all_env(project_id):
+    projects = ProjectEnvironment.query.filter_by(project_id=project_id).all()
     project_list = [{'id': str(project.id), 'name': project.name, 'project_id': project.id} for project in projects]
     return jsonify({'data': project_list})
 
@@ -522,18 +522,19 @@ def docker_build():
     data = request.form
     app_user_data_path = data.get('app_user_data')
     the_socket_room_name = data.get('socket_room_name')
+    image_version = data.get('image_version')
     
     # Extract project_id from the request parameters
-    project_id = data.get('project_id')
+    environment_id = data.get('environment_id')
 
     # Query the database for the project with the given project_id
-    project = ProjectDockerBuild.query.filter_by(project_id=project_id).first()
-    
+    project = ProjectDockerBuild.query.filter_by(environment_id=environment_id).first()
+
     build_data = {
          'data': {
-            'project_id': project.id,
+            'project_id': project.project_id,
             'image_name': project.image_name,
-            'image_version': project.image_version,
+            'image_version': image_version,
             'cache': project.cache,
             'platform': project.platform,
             'target': project.target,
@@ -542,6 +543,7 @@ def docker_build():
             'docker_socket': 'unix:///Users/code4mk/.colima/default/docker.sock'
          }
     }
+    print(str(build_data))
 
     global threads, stop_background_task
     import random
@@ -627,9 +629,9 @@ b.build()
             
             sio.emit('build_completed', 'completed', to=the_socket_room)
             
-            if is_image_push == None:
-                print('docker image pushing')
-                docker_push(sio, the_socket_room=the_socket_room, image_name=image_name, image_version=image_version, project_path=project_path)
+            # if is_image_push == None:
+            #     print('docker image pushing')
+            #     docker_push(sio, the_socket_room=the_socket_room, image_name=image_name, image_version=image_version, project_path=project_path)
             
             stop_background_task[task_key] = True
 

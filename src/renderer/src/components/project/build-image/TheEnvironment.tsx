@@ -4,29 +4,34 @@ import { http } from '@utils/http'
 import { useAppSelector } from '@utils/redux/kit'
 
 function TheEnvironment(): JSX.Element {
-  // Define an array containing objects with id and name properties
+  // hook
+  const getProjectDetail = useAppSelector((state: any) => state.global.projectDetails)
+
+  // state
   const [selectedEnv, setSelectedEnv] = useState({} as any)
   const [environments, setEnviornments] = useState([] as any)
-  const getProjectDetail = useAppSelector((state: any) => state.global.projectDetails)
   const [imageName, setImageName] = useState('')
   const [theCache, setTheCache] = useState('no')
   const [thePlatform, setThePlatform] = useState('linux/amd64')
   const [theTarget, setTheTarget] = useState('')
   const [dockerfilePath, setDockerfilePath] = useState('/the-dockman/dockerfiles/app.Dockerfile')
-  
+
   useEffect(() => {
-    getData()
-  },[])
+    if (getProjectDetail?.id) {
+      getData()
+    }
+  }, [getProjectDetail])
 
   function getData(): void {
-    http.get('/project/environment/get-all').then((response) => {
+    http.get(`/project/environment/${getProjectDetail?.id}/get-all`).then((response) => {
       setEnviornments(response.data.data)
+      selectEnv(response.data.data[0])
     })
   }
 
-  function getEnvData(id) {
+  function getEnvData(id: string): void {
     http
-      .get(`/project//environment/data/${id}`)
+      .get(`/project/environment/data/${id}`)
       .then((response) => {
         console.log(response.data)
         const theEData: any = response.data?.data
@@ -66,7 +71,6 @@ function TheEnvironment(): JSX.Element {
       addEnvModal: true
     }))
   }
-
 
   function selectEnv(data): void {
     getEnvData(data.id)
@@ -124,7 +128,7 @@ function TheEnvironment(): JSX.Element {
             <hr />
 
             <div>
-            <div className="flex flex-row flex-wrap">
+              <div className="flex flex-row flex-wrap">
                 <div className="mr-4" style={{ width: '220px' }}>
                   <div className="mb-2">
                     <label
