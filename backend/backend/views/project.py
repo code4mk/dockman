@@ -369,6 +369,9 @@ def save_content():
     elif the_type == 'nginx':
         the_folder = os.path.join(project_path, 'the_dockman/config/nginx')
         the_path = os.path.join(the_folder, 'app.conf')
+    elif the_type == 'supervisord':
+        the_folder = os.path.join(project_path, 'the_dockman/config/supervisor')
+        the_path = os.path.join(the_folder, 'supervisord.conf')
     
     # Create the dockerfiles folder if it doesn't exist
     if not os.path.exists(the_folder):
