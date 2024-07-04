@@ -92,7 +92,7 @@ function NginxTab(): JSX.Element {
             />
             <p className="ml-1">/the_dockman/config/nginx/app.conf</p>
           </div>
-          <div className="w-full border-t-[1px] border-slate-300 rounded">
+          <div className="w-full border-t-[1px] border-slate-100 rounded">
             <div className="">
               <NginxEditor
                 content={nginxData} // Replace with the actual content
@@ -104,10 +104,9 @@ function NginxTab(): JSX.Element {
           <div className="w-full p-2 bg-white rounded-b"></div>
         </div>
         <div className="w-3/12">
-          <div className="ml-3 border-1 border-slate-300 shadow bg-white rounded min-h-full ">
-            <div className="w-full p-2">
+          <div className="ml-3  shadow bg-white rounded min-h-full ">
+            <div className="w-full pl-2 pr-2 pt-1 pb-1 border-[1px] border-slate-100">
               <p>Nginx Template</p>
-              <hr className="mt-1" />
             </div>
             <div className="p-2">
               {nginxLists?.map((item, index: number) => (

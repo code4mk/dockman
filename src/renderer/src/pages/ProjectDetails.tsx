@@ -7,6 +7,7 @@ import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/
 import toast from 'react-hot-toast'
 import DockerfileEditor from '@components/project/DockerfileEditor'
 import NginxTab from '@components/project/NginxTab'
+import DockerfileTab from '@components/project/DockerfileTab'
 import SupervisordTab from '@components/project/SupervisordTab'
 import BuildImageTab from '@components/project/build-image/BuildImageTab'
 import { useAppSelector, useAppDispatch } from '@utils/redux/kit'
@@ -200,7 +201,7 @@ function ProjectDetails(): JSX.Element {
 
         <div className="sticky top-0">
           <div>
-            {theOpenTab === 'dockerfile' && (
+            {/* {theOpenTab === 'dockerfile' && (
               <>
                 <div className="mt-4">
                   <p>{theOpenTab}</p>
@@ -280,6 +281,12 @@ function ProjectDetails(): JSX.Element {
                   </div>
                 </div>
               </>
+            )} */}
+
+            {theOpenTab === 'dockerfile' && (
+              <div className="max-h-[56vh] mt-4 w-full">
+                <DockerfileTab />
+            </div>
             )}
 
             {theOpenTab === 'nginx' && (

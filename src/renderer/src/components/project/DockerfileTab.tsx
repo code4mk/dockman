@@ -5,7 +5,7 @@ import Select from 'react-select'
 import toast from 'react-hot-toast'
 import { useAppSelector } from '@utils/redux/kit'
 
-function SupervisordTab(): JSX.Element {
+function DockerfileTab(): JSX.Element {
   const getProjectDetail = useAppSelector((state: any) => state.global.projectDetails)
   const [nginxLists, setNginxLists] = useState([] as any)
   const [selectedNginx, setSelectedNginx] = useState(null)
@@ -34,7 +34,7 @@ function SupervisordTab(): JSX.Element {
   }
 
   function getNginxData(): void {
-    const the_path: string = getProjectDetail?.project_path + '/the_dockman/config/supervisor/supervisord.conf'
+    const the_path: string = getProjectDetail?.project_path + '/the_dockman/dockerfiles/app.Dockerfile'
     http.get(`project/get-file-data?path=${the_path}`).then((response) => {
       setNginxData(response.data.file_data)
     })
@@ -48,7 +48,7 @@ function SupervisordTab(): JSX.Element {
     const formData = new FormData()
     formData.append('content', nginxData)
     formData.append('project_path', getProjectDetail?.project_path)
-    formData.append('the_type', 'supervisord')
+    formData.append('the_type', 'dockerfile')
     http.post('/project/save-content', formData).then((response) => {
       toast.success(response.data?.message, {
         duration: 3000,
@@ -60,27 +60,6 @@ function SupervisordTab(): JSX.Element {
 
   return (
     <div className="">
-      {/* <div className="flex w-full md:mb-0 items-center justify-between">
-        <div>
-          <label className="block text-sm font-bold text-gray-700">Select Nginx Preset</label>
-          <Select
-            options={options}
-            value={selectedNginx}
-            onChange={handleChange}
-            placeholder="Select Nginx Configuration"
-            className=" mr-2" // Added mr-2 for some spacing between Select and button
-          />
-        </div>
-
-        <div className="flex items-center">
-          <button
-            onClick={() => saveNginxData()}
-            className="bg-blue-500 text-white py-2 px-4 rounded-md"
-          >
-            Save
-          </button>
-        </div>
-      </div> */}
       <div className="w-full flex flex-row">
         <div className="w-9/12">
           <div className="w-full p-1 bg-white rounded-t flex">
@@ -89,13 +68,13 @@ function SupervisordTab(): JSX.Element {
               src="https://www.svgrepo.com/show/530447/all-covered.svg"
               alt=""
             />
-            <p className="ml-1">/the_dockman/config/supervisor/supervisord.conf</p>
+            <p className="ml-1">/the_dockman/dockerfiles/app.Dockerfile</p>
           </div>
           <div className="w-full border-t-[1px] border-slate-100 rounded">
             <div className="">
               <NginxEditor
                 content={nginxData} // Replace with the actual content
-                language="text"
+                language="dockerfile"
                 onContentChange={handleNginxcontent}
               />
             </div>
@@ -105,7 +84,7 @@ function SupervisordTab(): JSX.Element {
         <div className="w-3/12">
           <div className="ml-3 shadow bg-white rounded min-h-full ">
             <div className="w-full pl-2 pr-2 pt-1 pb-1 border-[1px] border-slate-100">
-              <p>supervisord Template</p>
+              <p>Dockerfile Template</p>
             </div>
             <div className="p-2">
               {nginxLists?.map((item, index: number) => (
@@ -133,4 +112,4 @@ function SupervisordTab(): JSX.Element {
   )
 }
 
-export default SupervisordTab
+export default DockerfileTab
