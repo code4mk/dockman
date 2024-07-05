@@ -12,7 +12,7 @@ interface AddModalProps {
   modalData?: any
   modalStatus: boolean
   onModalClose: (params: { modalName: string }) => void
-  onDataFetch: (data: any) => void
+  onDataFetch?: (data: any) => void
 }
 
 function TemplateDrawer({

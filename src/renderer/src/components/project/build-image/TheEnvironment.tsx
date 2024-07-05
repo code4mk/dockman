@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AddEnvModal from './AddEnvModal'
 import { http } from '@utils/http'
 import { useAppSelector } from '@utils/redux/kit'
+import EnvValueDrawer from './EnvValueDrawer'
 
 function TheEnvironment(): JSX.Element {
   // hook
@@ -10,11 +11,6 @@ function TheEnvironment(): JSX.Element {
   // state
   const [selectedEnv, setSelectedEnv] = useState({} as any)
   const [environments, setEnviornments] = useState([] as any)
-  const [imageName, setImageName] = useState('')
-  const [theCache, setTheCache] = useState('no')
-  const [thePlatform, setThePlatform] = useState('linux/amd64')
-  const [theTarget, setTheTarget] = useState('')
-  const [dockerfilePath, setDockerfilePath] = useState('/the-dockman/dockerfiles/app.Dockerfile')
 
   useEffect(() => {
     if (getProjectDetail?.id) {
@@ -25,33 +21,12 @@ function TheEnvironment(): JSX.Element {
   function getData(): void {
     http.get(`/project/environment/${getProjectDetail?.id}/get-all`).then((response) => {
       setEnviornments(response.data.data)
-      selectEnv(response.data.data[0])
     })
   }
 
-  function getEnvData(id: string): void {
-    http
-      .get(`/project/environment/data/${id}`)
-      .then((response) => {
-        console.log(response.data)
-        const theEData: any = response.data?.data
-        setImageName(theEData?.image_name)
-        setTheCache(theEData?.cache)
-        setThePlatform(theEData?.platform)
-        setTheTarget(theEData?.target)
-        setDockerfilePath(theEData?.dockerfile_path)
-      })
-      .catch((error) => {
-        setImageName('')
-        setTheCache('no')
-        setThePlatform('linux/amd64')
-        setTheTarget('')
-        setDockerfilePath('/the-dockman/dockerfiles/app.Dockerfile')
-      })
-  }
-
   const [modals, setModals] = useState({
-    addEnvModal: false
+    addEnvModal: false,
+    envDrawerOpen: false
   })
 
   function handleModalClose(data: any): void {
@@ -65,12 +40,6 @@ function TheEnvironment(): JSX.Element {
     getData()
   }
 
-
-  function selectEnv(data): void {
-    getEnvData(data.id)
-    setSelectedEnv(data)
-  }
-
   function addNewEnvModalOpen(): void {
     setModals((prevData) => ({
       ...prevData,
@@ -78,18 +47,12 @@ function TheEnvironment(): JSX.Element {
     }))
   }
 
-  function saveEnVData(): void {
-    const formData = new FormData()
-    formData.append('project_id', getProjectDetail.id)
-    formData.append('environment_id', selectedEnv.id)
-    formData.append('image_name', imageName)
-    formData.append('cache', theCache)
-    formData.append('platform', thePlatform)
-    formData.append('target', theTarget)
-    formData.append('dockerfile_path', dockerfilePath)
-    http.post('/project/environment/data-save', formData).then((response) => {
-      console.log(response)
-    })
+  function envValueDrawerOpen(data: any): void {
+    console.log(data)
+    setModals((prevData) => ({
+      ...prevData,
+      envDrawerOpen: true
+    }))
   }
 
   return (
@@ -100,25 +63,49 @@ function TheEnvironment(): JSX.Element {
         onModalClose={handleModalClose}
         onDataFetch={handleDataFetch}
       />
+      <EnvValueDrawer
+        modalStatus={modals.envDrawerOpen}
+        modalName="envDrawerOpen"
+        onModalClose={handleModalClose}
+      />
 
-      <div className="flex">
-        <div className="w-full  min-h-[68vh]">
+      <div className="flex bg-white shadow mt-2 ml-4 min-h-[70vh] rounded">
+        <div className="w-full">
           <div className="p-2">
             {/* Button for adding new environment */}
-            <div className="flex justify-between ">
+            <div className="flex justify-between pl-4 pr-4 ">
               <p>Environment Lists</p>
               <button
                 onClick={() => addNewEnvModalOpen()}
-                className="bg-blue-500 hover:bg-blue-700 text-white  py-1 px-1 rounded"
+                className="bg-teal-500 hover:bg-teal-700 text-white  py-1 px-2 rounded"
               >
                 Add New
               </button>
             </div>
             {/* Map over the environments array */}
-            <div className="mt-2">
+            <div className="mt-2 pl-4 pr-4">
               {environments.map((env) => (
-                <div key={env.id} className="bg-slate-200 shadow rounded mb-3 h-[40px]">
-                  <p className="p-2">{env.name}</p>
+                <div
+                  key={env.id}
+                  className="bg-slate-100 shadow  rounded mb-3 h-[50px] flex justify-between "
+                >
+                  <div>
+                    <p className="p-2">{env.name}</p>
+                  </div>
+                  <div className="flex flex-row mt-2">
+                    <p
+                      className="bg-green-500 hover:bg-green-700 text-white h-8  py-1 px-3 rounded cursor-pointer"
+                      onClick={() => envValueDrawerOpen(env)}
+                    >
+                      set value
+                    </p>
+                    <p
+                      className="bg-red-500 hover:bg-red-700 text-white h-8 py-1 px-3 rounded cursor-pointer ml-4 mr-2"
+                      onClick={() => ''}
+                    >
+                      delete
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

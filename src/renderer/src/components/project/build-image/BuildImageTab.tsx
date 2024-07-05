@@ -91,7 +91,7 @@ function BuildImageTab(): JSX.Element {
             </div>
           </div>
         </div>
-        <div className=" p-4 w-10/12 shadow rounded ml-4 mt-2 bg-white">
+        <div className="w-10/12">
           {selectedMenu === 'builder' && (
             <>
               <div className="mb-4 flex flex-row">
