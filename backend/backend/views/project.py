@@ -408,9 +408,10 @@ def get_file_data():
     else:
         return jsonify({'error': 'Path parameter is missing'}), 400
     
-@bp.route('get-nginx-lists', methods=['GET'])
+@bp.route('get-template-lists', methods=['GET'])
 def get_nginx_lists():
-    url = "https://raw.githubusercontent.com/dockmandev/dockman-data-hub/main/nginx/nginx.json"
+    template_type = request.args.get('template_type')
+    url = f"https://raw.githubusercontent.com/dockmandev/dockman-data-hub/main/{template_type}/{template_type}-template.json"
     response = requests.get(url)
     data = response.json()
     return data
