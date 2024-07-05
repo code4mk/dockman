@@ -65,16 +65,17 @@ function TheEnvironment(): JSX.Element {
     getData()
   }
 
-  function openAddEnvModal(): void {
-    setModals((prevData) => ({
-      ...prevData,
-      addEnvModal: true
-    }))
-  }
 
   function selectEnv(data): void {
     getEnvData(data.id)
     setSelectedEnv(data)
+  }
+
+  function addNewEnvModalOpen(): void {
+    setModals((prevData) => ({
+      ...prevData,
+      addEnvModal: true
+    }))
   }
 
   function saveEnVData(): void {
@@ -101,132 +102,25 @@ function TheEnvironment(): JSX.Element {
       />
 
       <div className="flex">
-        <div className="w-[200px] border-r-[1px] border-gray-200 min-h-[68vh]">
+        <div className="w-full  min-h-[68vh]">
           <div className="p-2">
             {/* Button for adding new environment */}
-            <button
-              onClick={openAddEnvModal}
-              className="bg-blue-500 hover:bg-blue-700 text-white  py-1 px-1 rounded"
-            >
-              Add New
-            </button>
-            {/* Map over the environments array */}
-            {environments.map((env) => (
-              <div
-                key={env.id}
-                onClick={() => selectEnv(env)}
-                className={`p-1 px-2 bg-gray-100 mt-2 rounded shadow cursor-pointer border-[1px] ${selectedEnv.id === env.id ? ' border-teal-500' : 'border-gray-200'}`}
+            <div className="flex justify-between ">
+              <p>Environment Lists</p>
+              <button
+                onClick={() => addNewEnvModalOpen()}
+                className="bg-blue-500 hover:bg-blue-700 text-white  py-1 px-1 rounded"
               >
-                <p>{env.name}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="p-2">
-          <div>
-            <p>{selectedEnv?.name}</p>
-            <hr />
-
-            <div>
-              <div className="flex flex-row flex-wrap">
-                <div className="mr-4" style={{ width: '220px' }}>
-                  <div className="mb-2">
-                    <label
-                      htmlFor="content-name"
-                      className="text-sm font-medium text-gray-700 block"
-                    >
-                      Image Name <span className="text-red-600">*</span>
-                    </label>
-                    <input
-                      required={true}
-                      type="text"
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value={imageName}
-                      onInput={(event: any) => setImageName(event.target.value)}
-                      placeholder="my-project"
-                    />
-                  </div>
-                </div>
-                <div className="mr-4" style={{ width: '220px' }}>
-                  <div className="mb-2">
-                    <label
-                      htmlFor="content-name"
-                      className="text-sm font-medium text-gray-700 block"
-                    >
-                      Cache
-                    </label>
-                    <div className="">
-                      <select
-                        value={theCache}
-                        className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                        onChange={(e) => setTheCache(e.target.value)}
-                      >
-                        <option value="yes">yes</option>
-                        <option value="no">no</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="mr-4" style={{ width: '220px' }}>
-                  <div className="mb-2">
-                    <label
-                      htmlFor="content-name"
-                      className="text-sm font-medium text-gray-700 block"
-                    >
-                      Platform *
-                    </label>
-                    <div className="">
-                      <select
-                        className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                        value={thePlatform}
-                        onChange={(e) => setThePlatform(e.target.value)}
-                      >
-                        <option value="linux/amd64">linux/amd64</option>
-                        <option value="linux/arm64">linux/arm64</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ width: '220px' }}>
-                  <div className="mb-2">
-                    <label
-                      htmlFor="content-name"
-                      className="text-sm font-medium text-gray-700 block"
-                    >
-                      Target
-                    </label>
-                    <input
-                      required={true}
-                      type="text"
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value={theTarget}
-                      onInput={(event: any) => setTheTarget(event.target.value)}
-                      placeholder="production"
-                    />
-                  </div>
-                </div>
-                <div style={{ width: '420px' }}>
-                  <div className="mb-2 ml-4">
-                    <label
-                      htmlFor="content-name"
-                      className="text-sm font-medium text-gray-700 block"
-                    >
-                      File
-                    </label>
-                    <input
-                      required={true}
-                      type="text"
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value={dockerfilePath}
-                      onInput={(event: any) => setDockerfilePath(event.target.value)}
-                      placeholder="production"
-                    />
-                  </div>
-                </div>
-              </div>
+                Add New
+              </button>
             </div>
-            <div>
-              <button onClick={() => saveEnVData()}>save</button>
+            {/* Map over the environments array */}
+            <div className="mt-2">
+              {environments.map((env) => (
+                <div key={env.id} className="bg-slate-200 shadow rounded mb-3 h-[40px]">
+                  <p className="p-2">{env.name}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>

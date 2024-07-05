@@ -87,7 +87,7 @@ function BuildImageTab(): JSX.Element {
               onClick={() => setSelectedMenu('registry')}
               className={`py-1.5 px-4 border-[1px] ${selectedMenu === 'registry' ? ' border-teal-500 ' : ''}   w-full bg-slate-50  rounded mb-2 cursor-pointer`}
             >
-              <p>Registry</p>
+              <p>Container Registry</p>
             </div>
           </div>
         </div>
