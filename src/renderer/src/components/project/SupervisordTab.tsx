@@ -12,7 +12,7 @@ function SupervisordTab(): JSX.Element {
   const [nginxData, setNginxData] = useState('')
 
   useEffect(() => {
-    http.get('/project/get-nginx-lists').then((response) => {
+    http.get('/project/get-template-lists?template_type=supervisor').then((response) => {
       setNginxLists(response.data?.data)
     })
     if (getProjectDetail?.project_path) {
@@ -103,15 +103,32 @@ function SupervisordTab(): JSX.Element {
           <div className="w-full p-2 bg-white rounded-b"></div>
         </div>
         <div className="w-3/12">
-          <div className="ml-3 shadow bg-white rounded min-h-full ">
+          <div className="ml-3 shadow bg-white rounded min-h-full">
             <div className="w-full pl-2 pr-2 pt-1 pb-1 border-[1px] border-slate-100">
-              <p>supervisord Template</p>
+              <p>Supervisor Template</p>
             </div>
-            <div className="p-2">
+            <div className="pl-2 pr-2 mt-2 max-h-[54vh] overflow-y-scroll ">
               {nginxLists?.map((item, index: number) => (
-                <div key={index} className="flex flex-row mb-3">
-                  <img className="w-6 h-6 mr-2" src={item?.icon} alt="" />
-                  <p className="cursor-pointer hover:text-blue-500 ">{item?.slug}</p>
+                <div key={index} className="mb-3 p-2 shadow rounded bg-slate-100 ">
+                  <div className="flex flex-row">
+                    <img className="w-6 h-6 mr-2" src={item?.icon} alt="" />
+                    <p className="cursor-pointer hover:text-blue-500 ">{item?.name}</p>
+                  </div>
+
+                  <div>
+                    <p className="p-2">{item?.description}</p>
+                  </div>
+                  <div className="flex flex-row pl-2">
+                    <p>author:</p>
+                    <a
+                      className="ml-2"
+                      href={`https://github.com/${item?.author}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {item?.author}
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
