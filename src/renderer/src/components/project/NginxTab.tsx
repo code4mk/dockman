@@ -4,12 +4,14 @@ import NginxEditor from './NginxEditor'
 import Select from 'react-select'
 import toast from 'react-hot-toast'
 import { useAppSelector } from '@utils/redux/kit'
+import TemplateDrawer from './TemplateDrawer'
 
 function NginxTab(): JSX.Element {
   const getProjectDetail = useAppSelector((state: any) => state.global.projectDetails)
   const [nginxLists, setNginxLists] = useState([] as any)
   const [selectedNginx, setSelectedNginx] = useState(null)
   const [nginxData, setNginxData] = useState('')
+  const [theModalData, setTheModalData] = useState({} as any)
 
   useEffect(() => {
     http.get('/project/get-template-lists?template_type=nginx').then((response) => {
@@ -59,8 +61,41 @@ function NginxTab(): JSX.Element {
     })
   }
 
+  const [modals, setModals] = useState({
+    templateDrawerOpen: false
+  })
+
+  const handleModalClose = (data: any): void => {
+    setModals((prevState) => ({
+      ...prevState,
+      [data.modalName]: false
+    }))
+  }
+  function handleDataFetch(data: any): void {
+    setNginxData(data)
+  }
+
+  function openTemplateDrawer(data: any): void {
+    let theData: any = data
+    theData['monaco_lang'] = 'nginx'
+    theData['drawer_title'] = 'Nginx Template'
+
+    setTheModalData(theData)
+    setModals((prevData) => ({
+      ...prevData,
+      templateDrawerOpen: true
+    }))
+  }
+
   return (
     <div className="">
+      <TemplateDrawer
+        modalStatus={modals.templateDrawerOpen}
+        modalName="templateDrawerOpen"
+        onModalClose={handleModalClose}
+        modalData={theModalData}
+        onDataFetch={handleDataFetch}
+      />
       {/* <div className="flex w-full md:mb-0 items-center justify-between">
         <div>
           <label className="block text-sm font-bold text-gray-700">Select Nginx Preset</label>
@@ -113,7 +148,12 @@ function NginxTab(): JSX.Element {
                 <div key={index} className="mb-3 p-2 shadow rounded bg-slate-100 ">
                   <div className="flex flex-row">
                     <img className="w-6 h-6 mr-2" src={item?.icon} alt="" />
-                    <p className="cursor-pointer hover:text-blue-500 ">{item?.name}</p>
+                    <p
+                      className="cursor-pointer hover:text-blue-500"
+                      onClick={() => openTemplateDrawer(item)}
+                    >
+                      {item?.name}
+                    </p>
                   </div>
 
                   <div>

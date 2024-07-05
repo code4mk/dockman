@@ -36,7 +36,7 @@ const CopyToClipboardButton = ({ textToCopy }) => {
         )}
       </button>
       {isPopoverVisible && (
-        <div className="absolute bg-white p-1 rounded-md border border-gray-300 shadow-md text-xs -mt-3 ml-6">
+        <div className="absolute bg-white p-1 rounded-md border border-gray-300 shadow-md text-xs -mt-3 ml-6 z-50">
           Copied!
         </div>
       )}

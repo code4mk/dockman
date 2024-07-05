@@ -416,7 +416,7 @@ def get_nginx_lists():
     data = response.json()
     return data
 
-@bp.route('get-nginx-data', methods=['GET'])
+@bp.route('get-template-content', methods=['GET'])
 def get_nginx_data():
     url = request.args.get('path')
 

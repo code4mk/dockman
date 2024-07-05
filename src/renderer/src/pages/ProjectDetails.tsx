@@ -5,13 +5,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeftIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-import DockerfileEditor from '@components/project/DockerfileEditor'
 import NginxTab from '@components/project/NginxTab'
 import DockerfileTab from '@components/project/DockerfileTab'
 import SupervisordTab from '@components/project/SupervisordTab'
 import BuildImageTab from '@components/project/build-image/BuildImageTab'
 import { useAppSelector, useAppDispatch } from '@utils/redux/kit'
 import { projectAction } from '@store/global'
+import TemplateDrawer from '@components/project/TemplateDrawer'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -138,6 +138,7 @@ function ProjectDetails(): JSX.Element {
     { name: 'Supervisord', slug: 'supervisord', current: false },
     { name: 'Build Image', slug: 'build_image', current: false }
   ]
+
 
   return (
     <BaseLayout>
