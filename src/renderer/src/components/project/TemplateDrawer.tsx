@@ -27,14 +27,11 @@ function TemplateDrawer({
 
   useEffect(() => {
     setTheContent('')
-    if (modalName === 'templateDrawerOpen') {
+    if (modalName === 'templateDrawerOpen' && modalStatus) {
       setOpenModal(modalStatus)
+      getTemplateContent()
     }
   }, [modalData, setOpenModal, modalStatus])
-
-  useEffect(() => {
-    getTemplateContent()
-  }, [openModal])
 
   function getTemplateContent(): void {
     http.get(`/project/get-template-content?path=${modalData?.path}`).then((response) => {
@@ -44,6 +41,7 @@ function TemplateDrawer({
 
   function modalClose(): void {
     setTheContent('')
+    setOpenModal(false)
     onModalClose({
       modalName: 'templateDrawerOpen'
     })

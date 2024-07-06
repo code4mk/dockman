@@ -56,7 +56,6 @@ function ProjectDetails(): JSX.Element {
   useEffect(() => {
     getData()
     getProjectData(projectId)
-    console.log(getReduxState)
   }, [projectId])
 
   useEffect(() => {
@@ -142,13 +141,6 @@ function ProjectDetails(): JSX.Element {
 
   return (
     <BaseLayout>
-      <DockerfileGenerateModal
-        modalStatus={modals.dockerfileGenerateModal}
-        modalName="dockerfileGenerateModal"
-        onModalClose={handleModalClose}
-        onDataFetch={handleDataFetch}
-      />
-
       <div className="flex min-h-[90vh] max-h-[90vh] bg-gray-100 pl-4 pr-4 pt-1 flex-col">
         <div className="mb-2">
           <p

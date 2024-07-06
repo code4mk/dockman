@@ -12,7 +12,7 @@ interface AddModalProps {
   modalData?: any
   modalStatus: boolean
   onModalClose: (params: { modalName: string }) => void
-  onDataFetch: () => void
+  onDataFetch: (data?: string) => void
 }
 
 export default function AddEnvModal({
@@ -55,7 +55,7 @@ export default function AddEnvModal({
   }
 
   return (
-    <Dialog open={openModal} onClose={modalClose} className="relative z-10">
+    <Dialog open={openModal} onClose={() => ''} className="relative z-10">
       <DialogBackdrop
         transition
         className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"

@@ -3,6 +3,8 @@ import AddEnvModal from './AddEnvModal'
 import { http } from '@utils/http'
 import { useAppSelector } from '@utils/redux/kit'
 import EnvValueDrawer from './EnvValueDrawer'
+import DeleteConfirmModal from '@components/global/DeleteConfirmModal'
+import toast from 'react-hot-toast'
 
 function TheEnvironment(): JSX.Element {
   // hook
@@ -11,6 +13,7 @@ function TheEnvironment(): JSX.Element {
   // state
   const [selectedEnv, setSelectedEnv] = useState({} as any)
   const [environments, setEnviornments] = useState([] as any)
+  const [deleteKey, setTheDeleteKey] = useState('')
 
   useEffect(() => {
     if (getProjectDetail?.id) {
@@ -26,7 +29,8 @@ function TheEnvironment(): JSX.Element {
 
   const [modals, setModals] = useState({
     addEnvModal: false,
-    envDrawerOpen: false
+    envDrawerOpen: false,
+    deleteConfirmModal: false
   })
 
   function handleModalClose(data: any): void {
@@ -47,12 +51,37 @@ function TheEnvironment(): JSX.Element {
     }))
   }
 
+  function deleteModalOpen(title, description, data, theKey): void {
+    let theData: any = data
+    theData['modalTitle'] = title
+    theData['modalDescription'] = description
+    setSelectedEnv(data)
+    setTheDeleteKey(theKey)
+    setModals((prevData) => ({
+      ...prevData,
+      deleteConfirmModal: true
+    }))
+  }
+
   function envValueDrawerOpen(data: any): void {
-    console.log(data)
+    setSelectedEnv(data)
     setModals((prevData) => ({
       ...prevData,
       envDrawerOpen: true
     }))
+  }
+
+  function handleDelete(data: any): void {
+    if (data?.the_delete_key === 'env_delete') {
+      http.delete(`/project/environment/delete/${data?.id}`).then((response) => {
+        toast.success(response?.data?.message, {
+          duration: 3000,
+          position: 'top-center',
+          className: 'mt-14 mr-2'
+        })
+        getData()
+      })
+    }
   }
 
   return (
@@ -66,7 +95,17 @@ function TheEnvironment(): JSX.Element {
       <EnvValueDrawer
         modalStatus={modals.envDrawerOpen}
         modalName="envDrawerOpen"
+        modalData={selectedEnv}
         onModalClose={handleModalClose}
+      />
+
+      <DeleteConfirmModal
+        modalStatus={modals.deleteConfirmModal}
+        modalName="deleteConfirmModal"
+        modalData={selectedEnv}
+        onModalClose={handleModalClose}
+        deleteKey={deleteKey}
+        onDataFetch={(data) => handleDelete(data)}
       />
 
       <div className="flex bg-white shadow mt-2 ml-4 min-h-[70vh] rounded">
@@ -87,7 +126,7 @@ function TheEnvironment(): JSX.Element {
               {environments.map((env) => (
                 <div
                   key={env.id}
-                  className="bg-slate-100 shadow  rounded mb-3 h-[50px] flex justify-between "
+                  className="border-[1px] border-gray-300 rounded mb-3 h-[50px] flex justify-between "
                 >
                   <div>
                     <p className="p-2">{env.name}</p>
@@ -101,7 +140,14 @@ function TheEnvironment(): JSX.Element {
                     </p>
                     <p
                       className="bg-red-500 hover:bg-red-700 text-white h-8 py-1 px-3 rounded cursor-pointer ml-4 mr-2"
-                      onClick={() => ''}
+                      onClick={() =>
+                        deleteModalOpen(
+                          'Delete Environment',
+                          `Do you want to delete ${env?.name}`,
+                          env,
+                          'env_delete'
+                        )
+                      }
                     >
                       delete
                     </p>

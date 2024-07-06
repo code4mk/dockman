@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { http } from '@utils/http'
+import toast from 'react-hot-toast'
 
 interface AddModalProps {
   modalName: string
@@ -29,33 +31,57 @@ export default function EnvValueDrawer({
   const [dockerfilePath, setDockerfilePath] = useState('/the-dockman/dockerfiles/app.Dockerfile')
 
   useEffect(() => {
-    if (modalName === 'envDrawerOpen') {
+    if (modalName === 'envDrawerOpen' && modalStatus) {
       setOpenModal(modalStatus)
+      setImageName('')
+      setTheCache('no')
+      setThePlatform('linux/amd64')
+      setTheTarget('')
+      setDockerfilePath('/the-dockman/dockerfiles/app.Dockerfile')
+
+      getEnvData(modalData?.id)
     }
   }, [modalData, setOpenModal, modalStatus])
 
   function modalClose(): void {
+    setOpenModal(false)
     onModalClose({
       modalName: 'envDrawerOpen'
     })
   }
 
-  // function saveEnVData(): void {
-  //   const formData = new FormData()
-  //   formData.append('project_id', getProjectDetail.id)
-  //   formData.append('environment_id', selectedEnv.id)
-  //   formData.append('image_name', imageName)
-  //   formData.append('cache', theCache)
-  //   formData.append('platform', thePlatform)
-  //   formData.append('target', theTarget)
-  //   formData.append('dockerfile_path', dockerfilePath)
-  //   http.post('/project/environment/data-save', formData).then((response) => {
-  //     console.log(response)
-  //   })
-  // }
+  function getEnvData(id: any): void {
+    http.get(`/project/environment/data/${id}`).then((response) => {
+      const theEData: any = response.data?.data
+      setImageName(theEData?.image_name)
+      setTheCache(theEData?.cache)
+      setThePlatform(theEData?.platform)
+      setTheTarget(theEData?.target)
+      setDockerfilePath(theEData?.dockerfile_path)
+    })
+  }
+
+  function saveEnVData(): void {
+    const formData = new FormData()
+    formData.append('project_id', modalData?.project_id)
+    formData.append('environment_id', modalData?.id)
+    formData.append('image_name', imageName)
+    formData.append('cache', theCache)
+    formData.append('platform', thePlatform)
+    formData.append('target', theTarget)
+    formData.append('dockerfile_path', dockerfilePath)
+    http.post('/project/environment/data-save', formData).then((response) => {
+      console.log(response)
+      toast.success('Environment value save', {
+        duration: 3000,
+        position: 'top-center',
+        className: 'mt-14 mr-2'
+      })
+    })
+  }
 
   return (
-    <Dialog open={openModal} onClose={modalClose} className="relative z-10">
+    <Dialog open={openModal} onClose={() => ''} className="relative z-50 ">
       <div className="fixed inset-0" />
 
       <div className="fixed inset-0 overflow-hidden">
@@ -69,7 +95,11 @@ export default function EnvValueDrawer({
                 <div className="px-4 sm:px-6">
                   <div className="flex items-start justify-between">
                     <DialogTitle className="text-base font-semibold leading-6 text-gray-900">
-                      Panel title
+                      <p>
+                        Environment
+                        <span className="ml-2 mr-2 text-lime-500 ">{modalData?.name}</span>
+                        values
+                      </p>
                     </DialogTitle>
                     <div className="ml-3 flex h-7 items-center">
                       <button
@@ -174,6 +204,14 @@ export default function EnvValueDrawer({
                         placeholder="production"
                       />
                     </div>
+                  </div>
+                  <div className="flex justify-start mt-5">
+                    <p
+                      className="bg-green-500 hover:bg-green-700 text-white h-8 w-16  py-1 px-3 rounded cursor-pointer"
+                      onClick={() => saveEnVData()}
+                    >
+                      Save
+                    </p>
                   </div>
                 </div>
               </div>
