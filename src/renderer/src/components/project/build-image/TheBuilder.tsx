@@ -17,6 +17,25 @@ function TheBuilder(): JSX.Element {
   const [environments, setEnviornments] = useState([] as any)
   const [selectedEnv, setSelectedEnv] = useState('')
 
+  useEffect(() => {
+    const fetchDirectoryContents = async () => {
+      if (true) {
+        try {
+          const result = await window?.api.getUserDataPath()
+          setTheUserData(result)
+        } catch (error) {
+          console.error('Error reading directory:', error)
+        }
+      }
+    }
+
+    fetchDirectoryContents()
+
+    return () => {
+      // Cleanup function (if needed)
+    }
+  }, [])
+
 
   useEffect(() => {
     if (true) {

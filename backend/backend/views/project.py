@@ -609,8 +609,11 @@ b.build()
             # Set up the virtual environment path
             project_path = '/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend'
             venv_name = '.dockman_venv'
-            the_user_app_data_path = "/Users/code4mk/Documents/GitHub/drf-django/dockman-app/dockman" #app_user_data_path.replace(' ', '\ ')
+            #the_user_app_data_path = "/Users/code4mk/Documents/GitHub/drf-django/dockman-app/dockman"
+            the_user_app_data_path = app_user_data_path.replace(' ', '\ ')
+
             venv_path = os.path.join(the_user_app_data_path, venv_name)
+            
             # Check if virtual environment already exists, if not, create it
             if not os.path.exists(venv_path):
                 create_venv_cmd1 = f"python3 -m venv {venv_path}"
