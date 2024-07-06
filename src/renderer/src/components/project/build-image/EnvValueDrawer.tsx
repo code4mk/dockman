@@ -71,7 +71,6 @@ export default function EnvValueDrawer({
     formData.append('target', theTarget)
     formData.append('dockerfile_path', dockerfilePath)
     http.post('/project/environment/data-save', formData).then((response) => {
-      console.log(response)
       toast.success('Environment value save', {
         duration: 3000,
         position: 'top-center',

@@ -1,8 +1,7 @@
-import { http } from '@utils/http'
 import { useEffect, useState } from 'react'
 import useSocket from '@utils/hooks/useSocket'
-import Terminal from './Terminal'
 import TheEnvironment from './TheEnvironment'
+import TheBuilder from './TheBuilder'
 import { useAppSelector } from '@utils/redux/kit'
 
 function BuildImageTab(): JSX.Element {
@@ -36,34 +35,6 @@ function BuildImageTab(): JSX.Element {
     }
   }, [])
 
-  useEffect(() => {
-    if (true) {
-      http.get(`/project/environment/${getProjectDetail?.id}/get-all`).then((response) => {
-        setEnviornments(response.data.data)
-      })
-    }
-  }, [])
-
-  function handleEnvironment(data: string): void {
-    getEnvData(data)
-  }
-
-  function getEnvData(id: string): void {
-    setSelectedEnv(id)
-  }
-
-  function buildImageSocket(): void {
-    const formData = new FormData()
-    formData.append('app_user_data', theUserData)
-    formData.append('socket_room_name', 'project-1')
-    formData.append('environment_id', selectedEnv)
-    formData.append('image_version', imageVersion)
-
-    http.post('/project/docker-build', formData).then((response) => {
-      //console.log(response)
-    })
-  }
-
   return (
     <>
       {/* <Terminal terminalOpen={isTerminalOpen} onOverlayClose={(data) => setIsTerminalOpen(data)} /> */}
@@ -94,64 +65,7 @@ function BuildImageTab(): JSX.Element {
         <div className="w-10/12">
           {selectedMenu === 'builder' && (
             <>
-              <div className="mb-4 flex flex-row">
-                <p className="mr-4">Image Build</p>
-              </div>
-
-              <div className="flex flex-row flex-wrap">
-                <div className="mr-4" style={{ width: '220px' }}>
-                  <div className="mb-2">
-                    <label
-                      htmlFor="content-name"
-                      className="text-sm font-medium text-gray-700 block"
-                    >
-                      Image Version <span className="text-red-600">*</span>
-                    </label>
-                    <input
-                      required={true}
-                      type="text"
-                      className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                      value={imageVersion}
-                      onInput={(event: any) => setImageVersion(event.target.value)}
-                      placeholder="1.0.1"
-                    />
-                  </div>
-                </div>
-                <div className="mr-4" style={{ width: '220px' }}>
-                  <div className="mb-2">
-                    <label
-                      htmlFor="content-name"
-                      className="text-sm font-medium text-gray-700 block"
-                    >
-                      Cache
-                    </label>
-                    <div className="">
-                      <select
-                        value={selectedEnv}
-                        className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
-                        onChange={(e) => handleEnvironment(e.target.value)}
-                      >
-                        <option value="">Select Environment</option>
-                        {environments.map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {item.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <button
-                    onClick={() => buildImageSocket()}
-                    className=" ml-1 mt-5 rounded-md bg-teal-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Build
-                  </button>
-                </div>
-              </div>
-
-              <Terminal />
+              <TheBuilder />
             </>
           )}
 

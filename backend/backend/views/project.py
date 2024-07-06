@@ -608,16 +608,16 @@ b.build()
 
             # Set up the virtual environment path
             project_path = '/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend'
-            venv_name = 'dockman_venv'
-            the_user_app_data_path = app_user_data_path.replace(' ', '\ ')
+            venv_name = '.dockman_venv'
+            the_user_app_data_path = "/Users/code4mk/Documents/GitHub/drf-django/dockman-app/dockman" #app_user_data_path.replace(' ', '\ ')
             venv_path = os.path.join(the_user_app_data_path, venv_name)
             # Check if virtual environment already exists, if not, create it
             if not os.path.exists(venv_path):
                 create_venv_cmd1 = f"python3 -m venv {venv_path}"
                 subprocess.run(create_venv_cmd1, shell=True, check=True)
-                combined_cmd = f"source {venv_path}/bin/activate && pip install dock-craftsman chardet && ./deploy-copy.sh"
+                combined_cmd = f"source {venv_path}/bin/activate && pip3 install dock-craftsman chardet && python3 {project_path}/build-me.py"
             else:
-                combined_cmd = f"source {venv_path}/bin/activate && ./deploy-copy.sh"
+                combined_cmd = f"source {venv_path}/bin/activate && python3 {project_path}/build-me.py"
 
             # Run the bash script using subprocess.Popen
             process = subprocess.Popen(combined_cmd, shell=True, cwd=project_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
