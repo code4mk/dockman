@@ -578,7 +578,9 @@ def background_task(task_key, app_user_data_path, the_json_data, the_socket_room
             dockerfile_path = data['data']['dockerfile_path']
 
             # Generate build-me.py inside base_path
-            build_me_script_path = os.path.join(data['data']['base_path'], 'build-me.py')
+            the_project_path = data['data']['base_path']
+            build_me_script_path = os.path.join(the_project_path, 'build-me.py')
+            
             
             # Check if build-me.py exists, if not, create it and set permissions
             if not os.path.exists(build_me_script_path):
@@ -607,7 +609,7 @@ b.build()
             print("build-me.py generated successfully at:", build_me_script_path)
 
             # Set up the virtual environment path
-            project_path = '/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend'
+            project_path = the_project_path
             venv_name = '.dockman_venv'
             #the_user_app_data_path = "/Users/code4mk/Documents/GitHub/drf-django/dockman-app/dockman"
             the_user_app_data_path = app_user_data_path.replace(' ', '\ ')
