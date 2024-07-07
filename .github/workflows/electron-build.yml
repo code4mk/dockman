@@ -61,8 +61,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
         upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.ref_tag }}/assets
-        asset_path: ./dist/electron-app-${{ matrix.os }}.zip
-        asset_name: electron-app-${{ matrix.os }}.zip
-        asset_content_type: application/zip
+        asset_path: ./dist/dockman-1.0.0-arm64.dmg
+        asset_name: dockman-1.0.0-arm64.dmg
+        asset_content_type: application/octet-stream
 
 
