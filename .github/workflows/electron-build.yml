@@ -32,23 +32,28 @@ jobs:
     - name: Install Pipenv
       run: python3 -m pip install pipenv
     
-    - name: Install dependencies
-      run: pnpm install
-    
-    - name: Build backend
-      run: |
-        cd backend
-        pipenv install
-        cd ..
-        pnpm run backendBuild
-    
     - name: Build Electron App for ${{ matrix.os }}
       run: |
         if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
+          cd backend
+          pipenv install
+          cd ..
+          pnpm install --force
+          pnpm run backendBuild
           pnpm run build:linux
         elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
+          cd backend
+          pipenv install
+          cd ..
+          pnpm install --force
+          pnpm run backendBuild
           pnpm run build:mac
         elif [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
+          cd backend
+          pipenv install
+          cd ..
+          pnpm install --force
+          pnpm run backendBuild
           pnpm run build:win
         fi
     
