@@ -41,9 +41,8 @@ jobs:
         pipenv run python ./pyinstaller-build.py
     
     - name: Install dependencies
-      run: |
-        pnpm install --force
-
+      run: pnpm install --force
+    
     - name: Build Electron App for ${{ matrix.os }}
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -55,7 +54,7 @@ jobs:
         elif [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
           pnpm run build:win
         fi
-    
+
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
@@ -65,3 +64,5 @@ jobs:
         asset_path: ./dist/electron-app-${{ matrix.os }}.zip
         asset_name: electron-app-${{ matrix.os }}.zip
         asset_content_type: application/zip
+
+
