@@ -19,7 +19,10 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '18.17.1'
+    
+    - name: Install pnpm
+      run: npm install -g pnpm
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -30,23 +33,23 @@ jobs:
       run: pip install pipenv
     
     - name: Install dependencies
-      run: npm install
+      run: pnpm install
     
     - name: Build backend
       run: |
         cd backend
         pipenv install
         cd ..
-        npm run backendBuild
+        pnpm run backendBuild
     
     - name: Build Electron App for ${{ matrix.os }}
       run: |
         if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
-          npm run build:linux
+          pnpm run build:linux
         elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
-          npm run build:mac
+          pnpm run build:mac
         elif [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
-          npm run build:win
+          pnpm run build:win
         fi
     
     - name: Upload artifact
