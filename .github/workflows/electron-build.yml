@@ -43,6 +43,7 @@ jobs:
     - name: Build Electron App for ${{ matrix.os }}
       run: |
         if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
+          pnpm install
           pnpm run build:linux
         elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
           pnpm run build:mac
