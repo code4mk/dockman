@@ -1,16 +1,18 @@
 name: Build and Publish Electron App
 
 on:
+
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
     
     steps:
     - name: Checkout code
@@ -57,42 +59,42 @@ jobs:
           pnpm run build:win
         fi
     
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.os }}-electron-app
-        path: dist/*
+    # - name: Upload artifact
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: ${{ matrix.os }}-electron-app
+    #     path: dist/*
   
-  create_release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+  # create_release:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v3
     
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+  #   - name: Create Release
+  #     id: create_release
+  #     uses: actions/create-release@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  #     with:
+  #       tag_name: ${{ github.ref }}
+  #       release_name: Release ${{ github.ref }}
+  #       draft: false
+  #       prerelease: false
     
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: ${{ matrix.os }}-electron-app
-        path: ./dist
+  #   - name: Download artifacts
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: ${{ matrix.os }}-electron-app
+  #       path: ./dist
     
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist
-        asset_name: electron-app-${{ matrix.os }}.zip
-        asset_content_type: application/zip
+  #   - name: Upload Release Asset
+  #     uses: actions/upload-release-asset@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  #     with:
+  #       upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #       asset_path: ./dist
+  #       asset_name: electron-app-${{ matrix.os }}.zip
+  #       asset_content_type: application/zip
