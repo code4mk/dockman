@@ -41,11 +41,11 @@ jobs:
         pipenv run python ./pyinstaller-build.py
     
     - name: Install dependencies
-      run: pnpm install --force
+      run: |
+        pnpm install --force
+        npm install --package-lock-only
     
     - name: Build Electron App for ${{ matrix.os }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
           pnpm run build:linux
@@ -54,43 +54,13 @@ jobs:
         elif [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
           pnpm run build:win
         fi
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.os }}-electron-app
-        path: dist/*
-
-  create_release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-      
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: ${{ matrix.os }}-electron-app
-        path: ./dist
-      
+    
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.ref_tag }}/assets
+        asset_path: ./dist/electron-app-${{ matrix.os }}.zip
         asset_name: electron-app-${{ matrix.os }}.zip
         asset_content_type: application/zip
