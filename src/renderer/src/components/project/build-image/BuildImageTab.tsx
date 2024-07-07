@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import useSocket from '@utils/hooks/useSocket'
 import TheEnvironment from './TheEnvironment'
 import TheBuilder from './TheBuilder'
+import TheRegistry from './TheRegistry'
 import { useAppSelector } from '@utils/redux/kit'
 
 function BuildImageTab(): JSX.Element {
@@ -77,7 +78,7 @@ function BuildImageTab(): JSX.Element {
 
           {selectedMenu === 'registry' && (
             <>
-              <p>{selectedMenu} coming soon</p>
+              <TheRegistry />
             </>
           )}
         </div>
