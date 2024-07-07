@@ -49,20 +49,12 @@ jobs:
       run: |
         if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
           pnpm run build:linux
+          cd resources && ls -la
+          cd dist && ls -la
         elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
           pnpm run build:mac
         elif [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
           pnpm run build:win
         fi
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.ref_tag }}/assets
-        asset_path: ./dist/dockman-1.0.0-arm64.dmg
-        asset_name: dockman-1.0.0-arm64.dmg
-        asset_content_type: application/octet-stream
 
 
