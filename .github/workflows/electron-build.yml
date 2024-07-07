@@ -44,6 +44,8 @@ jobs:
       run: pnpm install --force
     
     - name: Build Electron App for ${{ matrix.os }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
           pnpm run build:linux
