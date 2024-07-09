@@ -29,6 +29,7 @@ export default function EnvValueDrawer({
   const [thePlatform, setThePlatform] = useState('linux/amd64')
   const [theTarget, setTheTarget] = useState('')
   const [dockerfilePath, setDockerfilePath] = useState('/the-dockman/dockerfiles/app.Dockerfile')
+  const [isRegistryPublish, setIsRegistryPublish] = useState('' as any)
 
   useEffect(() => {
     if (modalName === 'envDrawerOpen' && modalStatus) {
@@ -58,6 +59,8 @@ export default function EnvValueDrawer({
       setThePlatform(theEData?.platform)
       setTheTarget(theEData?.target)
       setDockerfilePath(theEData?.dockerfile_path)
+      const registryPublishStatus = theEData?.is_registry_publish == true ? 'yes' : 'no'
+      setIsRegistryPublish(registryPublishStatus)
     })
   }
 
@@ -70,6 +73,7 @@ export default function EnvValueDrawer({
     formData.append('platform', thePlatform)
     formData.append('target', theTarget)
     formData.append('dockerfile_path', dockerfilePath)
+    formData.append('is_registry_publish', isRegistryPublish)
     http.post('/project/environment/data-save', formData).then((response) => {
       toast.success('Environment value save', {
         duration: 3000,
@@ -202,6 +206,26 @@ export default function EnvValueDrawer({
                         onInput={(event: any) => setDockerfilePath(event.target.value)}
                         placeholder="production"
                       />
+                    </div>
+
+                    <div className="mb-2">
+                      <label
+                        htmlFor="content-name"
+                        className="text-sm font-medium text-gray-700 block"
+                      >
+                        Image publish
+                      </label>
+                      <div className="">
+                        <select
+                          className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                          value={isRegistryPublish}
+                          onChange={(e) => setIsRegistryPublish(e.target.value)}
+                        >
+                          <option value="">select option</option>
+                          <option value="yes">yes</option>
+                          <option value="no">no</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                   <div className="flex justify-start mt-5">

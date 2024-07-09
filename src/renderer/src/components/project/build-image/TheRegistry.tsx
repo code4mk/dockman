@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Radio, RadioGroup } from '@headlessui/react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
+import toast from 'react-hot-toast'
 
 const container_registry_lists = [
   {
@@ -23,15 +24,31 @@ const container_registry_lists = [
     registry_slug: 'aws-ecr',
     registry_description: 'Amazon Elastic Container Registry by AWS'
   }
-];
+]
 
 export default function TheRegistry(): JSX.Element {
-  const [selectedRegistry, setSelectedRegistry] = useState({} as any)
+  const [selectedRegistry, setSelectedRegistry] = useState('' as any)
   const [dockerHubToken, setDockerHubToken] = useState('')
   const [awsPublicKey, setAwsPublicKey] = useState('')
   const [awsSecretKey, setAwsSecretKey] = useState('')
   const [acrUsername, setAcrUsername] = useState('')
   const [acrPassword, setAcrPassword] = useState('')
+
+  function theAlert(theType, msg: string): void {
+    if (theType === 'success') {
+      toast.success(msg, {
+        duration: 3000,
+        position: 'top-center',
+        className: 'mt-14 mr-2'
+      })
+    } else if (theType === 'error') {
+      toast.error(msg, {
+        duration: 3000,
+        position: 'top-center',
+        className: 'mt-14 mr-2'
+      })
+    }
+  }
 
   const handleSave = () => {
     const registryData = {
@@ -40,15 +57,37 @@ export default function TheRegistry(): JSX.Element {
     }
 
     if (selectedRegistry.registry_slug === 'docker-hub') {
+      if (dockerHubToken === '') {
+        theAlert('error', 'Docker hub token is required')
+        return
+      }
       registryData.credentials = { token: dockerHubToken }
     } else if (selectedRegistry.registry_slug === 'aws-ecr') {
+      if (awsPublicKey === '') {
+        theAlert('error', 'aws public key is required')
+        return
+      } else if (awsSecretKey === '') {
+        theAlert('error', 'aws secret key is required')
+        return
+      }
       registryData.credentials = { publicKey: awsPublicKey, secretKey: awsSecretKey }
     } else if (selectedRegistry.registry_slug === 'azure-acr') {
+      if (acrUsername === '') {
+        theAlert('error', 'acr username is required')
+        return
+      } else if (acrPassword === '') {
+        theAlert('error', 'acr password is required')
+        return
+      }
       registryData.credentials = { username: acrUsername, password: acrPassword }
     }
 
     console.log('Saved registry data:', registryData)
     // Here you can send `registryData` to your backend or handle it as needed.
+  }
+
+  function discardRegistry(): void {
+    setSelectedRegistry('')
   }
 
   return (
@@ -59,9 +98,31 @@ export default function TheRegistry(): JSX.Element {
         </div>
         <div className="pl-6 pr-6">
           <fieldset>
-            <legend className="text-sm font-semibold leading-6 text-gray-900">
-              Select registry
-            </legend>
+            <div className="flex flex-row">
+              <legend className="text-sm font-semibold leading-6 text-gray-900">
+                Select registry
+              </legend>
+              {selectedRegistry !== '' && (
+                <span className="ml-3 inline-flex items-center gap-x-0.5 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                  {selectedRegistry?.registry_name}
+                  <button
+                    type="button"
+                    className="group relative -mr-1 h-3.5 w-3.5 rounded-sm hover:bg-gray-500/20"
+                    onClick={() => discardRegistry()}
+                  >
+                    <span className="sr-only">Remove</span>
+                    <svg
+                      viewBox="0 0 14 14"
+                      className="h-3.5 w-3.5 stroke-gray-700/50 group-hover:stroke-gray-700/75"
+                    >
+                      <path d="M4 4l6 6m0-6l-6 6" />
+                    </svg>
+                    <span className="absolute -inset-1" />
+                  </button>
+                </span>
+              )}
+            </div>
+
             <RadioGroup
               value={selectedRegistry}
               onChange={setSelectedRegistry}
@@ -102,7 +163,7 @@ export default function TheRegistry(): JSX.Element {
           {selectedRegistry.registry_slug === 'docker-hub' && (
             <div className="mt-4">
               <label htmlFor="docker-hub-token" className="block text-sm font-medium text-gray-700">
-                Docker Hub Token
+                Docker Hub Token <span className=" text-red-500 ">*</span>
               </label>
               <input
                 type="password"
@@ -117,7 +178,7 @@ export default function TheRegistry(): JSX.Element {
             <>
               <div className="mt-4">
                 <label htmlFor="aws-public-key" className="block text-sm font-medium text-gray-700">
-                  AWS Public Key
+                  AWS Public Key <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -129,7 +190,7 @@ export default function TheRegistry(): JSX.Element {
               </div>
               <div className="mt-4">
                 <label htmlFor="aws-secret-key" className="block text-sm font-medium text-gray-700">
-                  AWS Secret Key
+                  AWS Secret Key <span className=" text-red-500">*</span>
                 </label>
                 <input
                   type="password"
@@ -145,7 +206,7 @@ export default function TheRegistry(): JSX.Element {
             <>
               <div className="mt-4">
                 <label htmlFor="acr-username" className="block text-sm font-medium text-gray-700">
-                  ACR Username
+                  ACR Username <span className=" text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -157,7 +218,7 @@ export default function TheRegistry(): JSX.Element {
               </div>
               <div className="mt-4">
                 <label htmlFor="acr-password" className="block text-sm font-medium text-gray-700">
-                  ACR Password
+                  ACR Password <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="password"

@@ -159,7 +159,7 @@ function DockerfileTab(): JSX.Element {
         <div className="flex items-center">
           <button
             onClick={() => saveNginxData()}
-            className="bg-blue-500 text-white py-2 px-4 rounded-md"
+            className="bg-teal-500 hover:bg-teal-700 text-white h-8 w-16  py-1 px-3 rounded cursor-pointer"
           >
             Save
           </button>
