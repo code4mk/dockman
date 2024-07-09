@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Boolean, DateTime
+from sqlalchemy import Boolean, DateTime, Text
 from . import db
 
 import uuid
@@ -40,6 +40,8 @@ class ProjectDockerBuild(db.Model):
     platform = db.Column(db.String(150), nullable=False)
     target = db.Column(db.String(150), nullable=False)
     dockerfile_path = db.Column(db.String(150), nullable=False)
+    is_registry_publish = Column(Boolean, default=False)
+    registry_info = Column(Text(), default="")
     created_at = db.Column(DateTime, nullable=False, default=datetime.now)
     
     def as_dict(self):

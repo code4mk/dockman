@@ -15,13 +15,17 @@ def create_app():
     # app.config.from_object(Config)
     print(f'home:::{home_directory}')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(home_directory, 'dockman.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     
     # Initialize SQLAlchemy directly in app.py
     db.init_app(app)
+    
+    # Initialize Flask-Migrate
+    migrate = Migrate(app, db)
+    
     with app.app_context():
         db.create_all()
-    
+        
     # Configure CORS
     CORS(app, resources={r"/*": {"origins": "*"}})
 

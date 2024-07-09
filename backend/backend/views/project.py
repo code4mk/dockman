@@ -9,6 +9,7 @@ from itertools import groupby
 from json.decoder import JSONDecodeError
 from datetime import datetime
 import uuid
+from backend.helpers.base import get_param
 
 bp = Blueprint('project', __name__)
 
@@ -138,47 +139,32 @@ def delete_env(env_id):
 
 @bp.route('/environment/data-save', methods=['POST'])
 def env_data_save():
-    # Extract data from form-data
-    env_id = request.form.get('environment_id')
+    # Extract data using get_param
+    env_id = get_param('environment_id')
+    
+    # Create a dictionary to hold the project data
+    project_data = {
+        "id": str(uuid.uuid4()),
+        "environment_id": env_id,
+        "image_name": get_param('image_name'),
+        "cache": get_param('cache'),
+        "platform": get_param('platform'),
+        "target": get_param('target'),
+        "dockerfile_path": get_param('dockerfile_path'),
+        "project_id": get_param('project_id'),
+        "registry_id": '48c15775-5233-46f0-929a-8d99476064bb',
+        "is_registry_publish": True if get_param('is_registry_publish') == 'yes' else False,
+        # "registry_info": json.dumps(get_param('registry_info')) if get_param('registry_info') else ""
+    }
 
-    # Check if the project_id exists
-    project = ProjectDockerBuild.query.filter_by(environment_id=env_id).first()
+    # Check if the project exists and merge data
+    existing_project = ProjectDockerBuild.query.filter_by(environment_id=env_id).first()
 
-    if project:
-        # Project exists, update the project
-        project.image_name = request.form.get('image_name')
-        project.cache = request.form.get('cache')
-        project.platform = request.form.get('platform')
-        project.target = request.form.get('target')
-        project.dockerfile_path = request.form.get('dockerfile_path')
-        project.project_id = request.form.get('project_id')
-        project.registry_id = '48c15775-5233-46f0-929a-8d99476064bb'
-        project.environment_id = env_id
-        # Update other fields as needed
+    if existing_project:
+        project_data["id"] = existing_project.id  # Preserve the original ID
+        db.session.merge(ProjectDockerBuild(**project_data))
     else:
-        # Project does not exist, create a new project
-        image_name = request.form.get('image_name')
-        cache = request.form.get('cache')
-        platform = request.form.get('platform')
-        target = request.form.get('target')
-        dockerfile_path = request.form.get('dockerfile_path')
-        project_id = request.form.get('project_id')
-
-        # Create a new Project instance
-        project = ProjectDockerBuild(
-            id = str(uuid.uuid4()),
-            environment_id = env_id,
-            project_id=project_id,
-            image_name=image_name,
-            cache=cache,
-            platform=platform,
-            target=target,
-            dockerfile_path=dockerfile_path,
-            registry_id = '48c15775-5233-46f0-929a-8d99476064bb'
-        )
-
-        # Add the new project to the database
-        db.session.add(project)
+        db.session.add(ProjectDockerBuild(**project_data))
 
     # Commit changes to the database
     db.session.commit()
@@ -187,8 +173,7 @@ def env_data_save():
     return jsonify({
         "message": "saved successfully",
     })
-
-
+    
 @bp.route('/environment/data/<env_id>', methods=['GET'])
 def get_env_data(env_id):
     # Query the ProjectDockerBuild object based on the environment_id
