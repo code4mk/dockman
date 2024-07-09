@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import NginxEditor from './NginxEditor'
+import { XMarkIcon, CursorArrowRippleIcon } from '@heroicons/react/24/outline'
+import TemplateDrawerEditor from './TemplateDrawerEditor'
 import { http } from '@utils/http'
 import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
 
@@ -52,13 +52,7 @@ function TemplateDrawer({
   }
 
   return (
-    <Dialog
-      open={openModal}
-      onClose={() => {
-        modalClose()
-      }}
-      className="relative z-10"
-    >
+    <Dialog open={openModal} onClose={() => ''} className="relative z-10">
       <div className="fixed inset-0" />
 
       <div className="fixed inset-0 overflow-hidden">
@@ -97,12 +91,15 @@ function TemplateDrawer({
                       <div className="flex-shrink-0 mr-10 flex">
                         <CopyToClipboardButton textToCopy={theContent} />
                         <div className="ml-2">
-                          <p onClick={() => directUse()} >use</p>
+                          <CursorArrowRippleIcon
+                            className="w-6 h-6 hover:text-teal-600 cursor-pointer"
+                            onClick={() => directUse()}
+                          />
                         </div>
                       </div>
                     </div>
                     <div className="w-full border-t-[1px] border-slate-100">
-                      <NginxEditor
+                      <TemplateDrawerEditor
                         content={theContent} // Replace with the actual content
                         language={modalData?.monaco_lang}
                         onContentChange={() => ''}

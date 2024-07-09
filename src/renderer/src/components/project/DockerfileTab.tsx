@@ -123,7 +123,7 @@ function DockerfileTab(): JSX.Element {
             </div>
             <div className="pl-2 pr-2 mt-2 max-h-[54vh] overflow-y-scroll ">
               {nginxLists?.map((item, index: number) => (
-                <div key={index} className="mb-3 p-2 shadow rounded bg-slate-100 ">
+                <div key={index} className="mb-3 p-2 border-[1px] border-gray-300 rounded">
                   <div className="flex flex-row">
                     <img className="w-6 h-6 mr-2" src={item?.icon} alt="" />
                     <p

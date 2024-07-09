@@ -206,7 +206,7 @@ export default function EnvValueDrawer({
                   </div>
                   <div className="flex justify-start mt-5">
                     <p
-                      className="bg-green-500 hover:bg-green-700 text-white h-8 w-16  py-1 px-3 rounded cursor-pointer"
+                      className="bg-teal-500 hover:bg-teal-700 text-white h-8 w-16  py-1 px-3 rounded cursor-pointer"
                       onClick={() => saveEnVData()}
                     >
                       Save

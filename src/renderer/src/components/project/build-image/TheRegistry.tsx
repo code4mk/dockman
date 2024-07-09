@@ -26,7 +26,7 @@ const container_registry_lists = [
 ];
 
 export default function TheRegistry(): JSX.Element {
-  const [selectedRegistry, setSelectedRegistry] = useState(container_registry_lists[0])
+  const [selectedRegistry, setSelectedRegistry] = useState({} as any)
   const [dockerHubToken, setDockerHubToken] = useState('')
   const [awsPublicKey, setAwsPublicKey] = useState('')
   const [awsSecretKey, setAwsSecretKey] = useState('')
