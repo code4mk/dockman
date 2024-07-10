@@ -4,6 +4,8 @@ from backend.views import project, container, image, volume, network
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from backend.models import db
 # Get the home directory
 import os
@@ -25,6 +27,13 @@ def create_app():
     
     with app.app_context():
         db.create_all()
+        
+        # Programmatically run `flask db migrate`
+        # alembic_cfg = AlembicConfig(os.path.join(os.path.dirname(__file__), 'migrations/alembic.ini'))
+        # command.revision(alembic_cfg, autogenerate=True, message="Automatic migration")
+
+        # # Programmatically run `flask db upgrade`
+        # command.upgrade(alembic_cfg, 'head')
         
     # Configure CORS
     CORS(app, resources={r"/*": {"origins": "*"}})

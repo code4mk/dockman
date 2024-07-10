@@ -10,6 +10,12 @@ function buildPython() {
     '--noconsole', // No shell
     '--noconfirm', // Don't confirm overwrite
     '--distpath=./resources', // Dist (out) path
+    // '--hidden-import=flask', // Ensure Flask is included
+    // '--hidden-import=sqlalchemy', // Ensure SQLAlchemy is included
+    // '--hidden-import=alembic', // Ensure Alembic is included
+    // '--hidden-import=flask_sqlalchemy', // Ensure Flask-SQLAlchemy is included
+    // '--hidden-import=flask_migrate', // Ensure Flask-Migrate is included
+    // '--add-data=backend/backend/migrations:./backend/migrations', // Include the migrations directory
     `${app}`
   ]
 

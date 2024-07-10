@@ -61,3 +61,11 @@ class ProjectEnvironment(db.Model):
     name = Column(String(150), nullable=False)
     project_id = db.Column(String(36), nullable=False)
     created_at = Column(DateTime, default=func.now())
+    
+class ContainerRegistry(db.Model):
+    id = Column(String(36), primary_key=True, default=str(uuid.uuid4()))
+    name = Column(String(150), nullable=False)
+    slug = db.Column(String(36), nullable=False)
+    registry_config = db.Column(Text(), default='')
+    project_id = db.Column(String(36), nullable=False)
+    created_at = Column(DateTime, default=func.now())

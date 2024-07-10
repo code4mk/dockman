@@ -39,17 +39,18 @@ function Terminal(): JSX.Element {
           setBuildImageStatus('started') // Update build status to 'started' when build starts
         })
 
-        theSocket.on('push_completed', (data) => {
-          setPushImageStatus(data)
+        theSocket.on('push_complete', (data) => {
+          setPushImageStatus(data.message)
         })
 
         theSocket.on('push_started', (data) => {
           setPushDataShow(true)
-          setPushImageStatus(data)
+          setPushImageStatus(data.message)
         })
 
-        theSocket.on('docker_push_status', (data) => {
-          setTheDockerPushData((prevData) => prevData + '\n' + data)
+        theSocket.on('push_status', (data) => {
+          setTheDockerPushData(data.message)
+          // setTheDockerPushData((prevData) => prevData + '\n' + data.message)
         })
       })
     }

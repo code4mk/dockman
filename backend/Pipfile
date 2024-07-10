@@ -16,6 +16,7 @@ wheel = "*"
 flask-socketio = "*"
 python-engineio = "*"
 dock-craftsman = "*"
+boto3 = "*"
 
 [dev-packages]
 
