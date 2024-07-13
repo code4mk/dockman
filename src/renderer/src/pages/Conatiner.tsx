@@ -4,9 +4,8 @@ import { http } from '@utils/http'
 import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
 import { CubeIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
-import AddContainerModal from '@components/container/AddContainerModal'
-import LogsContainerModal from '@components/container/LogsContainerModal'
 import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
+import ContainerActionDrawer from '@components/container/ContainerActionDrawer'
 
 function classNames(...classes: string[]): string {
   return classes.filter(Boolean).join(' ')
@@ -15,11 +14,12 @@ function classNames(...classes: string[]): string {
 function Container(): JSX.Element {
   const location = useLocation()
   const [containers, setContainers] = useState([] as any)
-  const [logContainerId, setLogContainerId] = useState(null as any)
+  const [selectedContainer, setSelectedContainer] = useState(null as any)
 
   const [modals, setModals] = useState({
     addContainerModal: false,
-    logsContainerModal: false
+    logsContainerModal: false,
+    containerActionDrawer: false
   })
 
   function getContainerStatusColor(status: string): string {
@@ -60,11 +60,11 @@ function Container(): JSX.Element {
     }))
   }
 
-  function logsContainerModalOpen(id: string): void {
-    setLogContainerId(id)
+  function containerActionDrawerOpen(data: any): void {
+    setSelectedContainer(data)
     setModals((prevData) => ({
       ...prevData,
-      logsContainerModal: true
+      containerActionDrawer: true
     }))
   }
 
@@ -88,25 +88,13 @@ function Container(): JSX.Element {
 
   return (
     <BaseLayout>
-      <AddContainerModal
-        modalStatus={modals.addContainerModal}
-        modalName="addContainerModal"
-        modalClose={modalCloseEmit}
-        // data={{
-        // 	content: desiredDeletedContent,
-        // 	pageId: props.pageId
-        // }}
-        // pageDataFetch={pageDataFetch}
+      <ContainerActionDrawer
+        modalStatus={modals.containerActionDrawer}
+        modalName="containerActionDrawer"
+        onModalClose={modalCloseEmit}
+        modalData={selectedContainer}
       />
-      <LogsContainerModal
-        modalStatus={modals.logsContainerModal}
-        modalName="logsContainerModal"
-        modalClose={modalCloseEmit}
-        modalData={{
-          container_id: logContainerId
-        }}
-        // pageDataFetch={pageDataFetch}
-      />
+
       <div className=" min-h-[90vh] bg-gray-100 px-4 ">
         <div className="flex items-center justify-between">
           {/* Left - Title */}
@@ -178,18 +166,23 @@ function Container(): JSX.Element {
                         <CopyToClipboardButton textToCopy={item.short.container_id} />
                       </p>
 
-                      <div className="flex">
-                        <div
-                          className={classNames(
-                            getContainerStatusColor(item.short.status),
-                            'flex-none rounded-full p-1 mt-1'
-                          )}
-                        >
-                          <div className="h-1.5 w-1.5 rounded-full bg-current"></div>
+                      <div className="flex flex-row gap-4 ">
+                        <div className="flex">
+                          <div
+                            className={classNames(
+                              getContainerStatusColor(item.short.status),
+                              'flex-none rounded-full p-1 mt-1'
+                            )}
+                          >
+                            <div className="h-1.5 w-1.5 rounded-full bg-current"></div>
+                          </div>
+                          <p className={classNames('text-slate-500', 'text-sm font-sm')}>
+                            {item.short.status}
+                          </p>
                         </div>
-                        <p className={classNames('text-slate-500', 'text-sm font-sm')}>
-                          {item.short.status}
-                        </p>
+                        <div className="flex">
+                          <p className="cursor-pointer text-gray-500 hover:text-gray-600 " >{item.short.ports}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -206,15 +199,9 @@ function Container(): JSX.Element {
                     <button
                       type="button"
                       className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
+                      onClick={() => containerActionDrawerOpen(item)}
                     >
-                      Inspect
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
-                      onClick={() => logsContainerModalOpen(item?.short?.container_id)}
-                    >
-                      Logs
+                      Action
                     </button>
                   </div>
                 </li>
