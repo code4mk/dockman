@@ -2,6 +2,7 @@
 
 from flask import Blueprint, jsonify
 from dock_craftsman.docker.container import TheContainer
+from backend.helpers.base import get_param
 # from backend.app import sio
 
 bp = Blueprint('container', __name__)
@@ -39,3 +40,14 @@ def remove(container_id):
     container = TheContainer(docker_socket="unix:///Users/code4mk/.colima/default/docker.sock")
     the_response = container.remove(container_id)
     return jsonify({'data': the_response})
+
+@bp.route('/exec/<container_id>', methods=['get'])
+def exec(container_id):
+    
+    container = TheContainer(docker_socket="unix:///Users/code4mk/.colima/default/docker.sock")
+    command = get_param('command')
+    the_pwd = get_param('the_pwd') if get_param('pwd') != '' else None
+    print(the_pwd)
+    the_response = container.exec_cmd(container_id,the_pwd, command)
+    return jsonify({'data': the_response})
+

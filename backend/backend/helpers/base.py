@@ -1,19 +1,29 @@
-from flask import request
+from flask import request, jsonify
 
-def get_param(key, default=None):
+def get_param(key=None):
     """
-    Retrieve a parameter value from form data, query string, or other sources.
+    Retrieve a parameter value from form data, query string, or JSON body.
     
     Args:
-    - key (str): The parameter key to retrieve.
-    - default: The default value to return if the parameter is not found.
+    - key (str): Optional parameter key to retrieve. If None, returns all parameters.
     
     Returns:
-    - The parameter value if found, otherwise the default value.
+    - The parameter value if found, otherwise None.
     """
-    value = request.form.get(key)
-    if value is None:
-        value = request.args.get(key)
-    if value is None:
-        value = default
-    return value
+    data = {}
+
+    # Check request.form for form data
+    data.update(request.form)
+
+    # Check request.args for query string parameters
+    data.update(request.args)
+
+    # Check if the request has JSON data
+    if request.is_json:
+        data.update(request.json)
+
+    # Return specific key if provided, otherwise return all data
+    if key:
+        return data.get(key)
+    else:
+        return data

@@ -69,3 +69,6 @@ class ContainerRegistry(db.Model):
     registry_config = db.Column(Text(), default='')
     project_id = db.Column(String(36), nullable=False)
     created_at = Column(DateTime, default=func.now())
+    
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
