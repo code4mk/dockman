@@ -69,7 +69,7 @@ function ContainerActionDrawer({
       let step1 = response.data.data.replace(/\r\n/g, '\n')
 
       // Replace "\n" with "\n\n"
-      let result = step1.replace(/\n/g, ' \n')
+      let result = step1.replace(/\n/g, ' \n\n')
       setLogsData(result)
     })
   }

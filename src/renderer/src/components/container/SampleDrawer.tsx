@@ -13,7 +13,7 @@ interface AddModalProps {
   onDataFetch?: (data: any) => void
 }
 
-function ContainerActionDrawer({
+function ImageActionDrawer({
   modalName,
   modalData,
   onModalClose,
@@ -23,7 +23,7 @@ function ContainerActionDrawer({
   const [openModal, setOpenModal] = useState(false)
 
   useEffect(() => {
-    if (modalName === 'containerActionDrawer' && modalStatus) {
+    if (modalName === 'imageActionDrawer' && modalStatus) {
       setOpenModal(modalStatus)
     }
   }, [modalData, setOpenModal, modalStatus])
@@ -31,7 +31,7 @@ function ContainerActionDrawer({
   function modalClose(): void {
     setOpenModal(false)
     onModalClose({
-      modalName: 'containerActionDrawer'
+      modalName: 'imageActionDrawer'
     })
   }
 
@@ -46,11 +46,11 @@ function ContainerActionDrawer({
               transition
               className="pointer-events-auto w-screen max-w-2xl transform transition duration-500 ease-in-out data-[closed]:translate-x-full sm:duration-700"
             >
-              <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+              <div className="flex h-full flex-col overflow-y-scroll bg-white py-3 shadow-xl">
                 <div className="px-4 sm:px-6">
                   <div className="flex items-start justify-between">
                     <DialogTitle className="text-base font-semibold leading-6 text-gray-900">
-                      Container Action
+                      Image Action
                     </DialogTitle>
                     <div className="ml-3 flex h-7 items-center">
                       <button
@@ -65,7 +65,7 @@ function ContainerActionDrawer({
                     </div>
                   </div>
                 </div>
-                <div className="relative mt-6 flex-1 px-4 sm:px-6 bg-slate-100">
+                <div className="relative mt-6 flex-1 px-4 sm:px-6 bg-white min-h-[90vh] max-h-[90vh] border-t-[2px] border-gray-100">
                   {/* content here */}
                 </div>
               </div>
@@ -77,4 +77,4 @@ function ContainerActionDrawer({
   )
 }
 
-export default ContainerActionDrawer
+export default ImageActionDrawer

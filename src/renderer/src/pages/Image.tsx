@@ -1,10 +1,10 @@
 import BaseLayout from '@layouts/Base'
 import { useLocation } from 'react-router-dom'
 import { http } from '@utils/http'
-import { CursorArrowRippleIcon } from '@heroicons/react/20/solid'
-import { CircleStackIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { CircleStackIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import CopyToClipboardButton from '@components/global/CopyToClipboardButton'
+import ImageActionDrawer from '@components/image/ImageActionDrawer'
 
 function classNames(...classes: string[]): string {
   return classes.filter(Boolean).join(' ')
@@ -13,6 +13,11 @@ function classNames(...classes: string[]): string {
 function Image(): JSX.Element {
   const location = useLocation()
   const [images, setImages] = useState([] as any)
+  const [selectedImage, setSelectedImage] = useState(null as any)
+
+  const [modals, setModals] = useState({
+    imageActionDrawer: false
+  })
 
   function getData(): void {
     http.get('/image').then((response) => {
@@ -32,8 +37,30 @@ function Image(): JSX.Element {
     return () => clearInterval(intervalId)
   }, [location.pathname])
 
+
+  function imageActionDrawerOpen(data: any): void {
+    setSelectedImage(data)
+    setModals((prevData) => ({
+      ...prevData,
+      imageActionDrawer: true
+    }))
+  }
+
+  function modalCloseEmit(data: any): void {
+    setModals((prevState) => ({
+      ...prevState,
+      [data.modalName]: false
+    }))
+  }
+
   return (
     <BaseLayout>
+      <ImageActionDrawer
+        modalStatus={modals.imageActionDrawer}
+        modalName="imageActionDrawer"
+        onModalClose={modalCloseEmit}
+        modalData={selectedImage}
+      />
       <div className=" min-h-[90vh] bg-gray-100 px-4 ">
         <div className="flex items-center justify-between mb-1">
           {/* Left - Title */}
@@ -80,9 +107,7 @@ function Image(): JSX.Element {
                   >
                     <CircleStackIcon
                       className={classNames(
-                        item.used_running
-                          ? 'text-teal-700'
-                          : 'text-gray-400 group-hover:text-teal-800',
+                        item.used_running ? 'text-teal-700' : 'text-gray-400',
                         'h-10 w-10 shrink-0'
                       )}
                       aria-hidden="true"
@@ -114,11 +139,28 @@ function Image(): JSX.Element {
                         </span>
                       </p>
 
-                      <p
-                        className={`text-sm font-medium ${item.used_running === true ? 'text-green-500' : 'text-gray-500'}`}
-                      >
-                        {item.status}
-                      </p>
+                      <div className="flex flex-row gap-4">
+                        {item?.used && (
+                          <div className="flex">
+                            <div
+                              className={`${item?.used_running === true ? 'text-green-500' : 'text-gray-500'} flex-none rounded-full p-1 mt-1`}
+                            >
+                              <div className="h-1.5 w-1.5 rounded-full bg-current"></div>
+                            </div>
+                            <p
+                              className={`text-sm font-medium ${item?.used_running === true ? 'text-green-500' : 'text-gray-500'}`}
+                            >
+                              used
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="flex">
+                          <p>
+                            {item?.platform?.os}/{item?.platform?.architecture}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -127,20 +169,9 @@ function Image(): JSX.Element {
                     <button
                       type="button"
                       className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
+                      onClick={() => imageActionDrawerOpen(item)}
                     >
-                      <CursorArrowRippleIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
-                    >
-                      Inspect
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
-                    >
-                      Logs
+                      Action
                     </button>
                   </div>
                 </li>
