@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Radio, RadioGroup } from '@headlessui/react'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import toast from 'react-hot-toast'
+import { http } from '@utils/http'
+import { useAppSelector } from '@utils/redux/kit'
 
 const container_registry_lists = [
   {
@@ -27,12 +29,31 @@ const container_registry_lists = [
 ]
 
 export default function TheRegistry(): JSX.Element {
+
+  const getProjectDetails = useAppSelector((state: any) => state.global.projectDetails)
+
   const [selectedRegistry, setSelectedRegistry] = useState('' as any)
   const [dockerHubToken, setDockerHubToken] = useState('')
   const [awsPublicKey, setAwsPublicKey] = useState('')
   const [awsSecretKey, setAwsSecretKey] = useState('')
   const [acrUsername, setAcrUsername] = useState('')
   const [acrPassword, setAcrPassword] = useState('')
+  const [projectId, setProjectId] = useState('')
+
+  useEffect(() => {
+    if (getProjectDetails?.id) {
+      setProjectId(getProjectDetails?.id)
+      getRegistryData(getProjectDetails?.id)
+    }
+  },[getProjectDetails])
+
+  function getRegistryData(id): void {
+    http.get(`/project/container-registry/get-data/${id}`).then((response: any) => {
+      let theSlug = response?.data?.data?.slug
+      let index = container_registry_lists.findIndex((item: any) => item.registry_slug === theSlug)
+      setSelectedRegistry(container_registry_lists[index])
+    })
+  }
 
   function theAlert(theType, msg: string): void {
     if (theType === 'success') {
@@ -51,7 +72,7 @@ export default function TheRegistry(): JSX.Element {
   }
 
   const handleSave = () => {
-    const registryData = {
+    let registryData: any = {
       registry: selectedRegistry,
       credentials: {}
     }
@@ -82,8 +103,20 @@ export default function TheRegistry(): JSX.Element {
       registryData.credentials = { username: acrUsername, password: acrPassword }
     }
 
-    console.log('Saved registry data:', registryData)
-    // Here you can send `registryData` to your backend or handle it as needed.
+    const formData = new FormData()
+    formData.append('project_id', projectId)
+    formData.append('slug', selectedRegistry.registry_slug)
+    formData.append('name', selectedRegistry.registry_name)
+    formData.append('registry_config', JSON.stringify(registryData?.credentials) )
+
+    http.post('/project/container-registry/data-save', formData).then((response) => {
+      toast.success('container registry save', {
+        duration: 3000,
+        position: 'top-center',
+        className: 'mt-14 mr-2'
+      })
+      getRegistryData(projectId)
+    })
   }
 
   function discardRegistry(): void {
@@ -128,8 +161,9 @@ export default function TheRegistry(): JSX.Element {
               onChange={setSelectedRegistry}
               className="mt-6 grid grid-cols-1 gap-y-6 sm:grid-cols-3 sm:gap-x-4"
             >
-              {container_registry_lists.map((registry) => (
+              {container_registry_lists.map((registry, index) => (
                 <Radio
+                  defaultChecked={true}
                   key={registry.id}
                   value={registry}
                   aria-label={registry.registry_name}
