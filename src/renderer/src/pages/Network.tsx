@@ -80,7 +80,7 @@ function Network(): JSX.Element {
                   >
                     <ServerIcon
                       className={classNames(
-                        item?.id ? 'text-teal-700' : 'text-gray-400',
+                        item?.id ? 'text-gray-400' : 'text-gray-400',
                         'h-10 w-10 shrink-0'
                       )}
                       aria-hidden="true"
@@ -108,24 +108,7 @@ function Network(): JSX.Element {
 
                   {/* Right side */}
                   <div className="flex-shrink-0 flex items-center px-2  rounded-r-md ">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
-                    >
-                      <CursorArrowRippleIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
-                    >
-                      Inspect
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-x-1.5 rounded-md border border-slate-500 text-slate-500 px-4 py-1.5 text-sm font-semibold shadow-sm hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ml-2"
-                    >
-                      Logs
-                    </button>
+                    {/* <p>left part</p> */}
                   </div>
                 </li>
               ))}
