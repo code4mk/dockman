@@ -85,13 +85,16 @@ export default function TheRegistry(): JSX.Element {
       registryData.credentials = { token: dockerHubToken }
     } else if (selectedRegistry.registry_slug === 'aws-ecr') {
       if (awsPublicKey === '') {
-        theAlert('error', 'aws public key is required')
+        theAlert('error', 'aws access key is required')
         return
       } else if (awsSecretKey === '') {
         theAlert('error', 'aws secret key is required')
         return
       }
-      registryData.credentials = { publicKey: awsPublicKey, secretKey: awsSecretKey }
+      registryData.credentials = {
+        publicKey: awsPublicKey,
+        secretKey: awsSecretKey
+      }
     } else if (selectedRegistry.registry_slug === 'azure-acr') {
       if (acrUsername === '') {
         theAlert('error', 'acr username is required')
@@ -100,7 +103,10 @@ export default function TheRegistry(): JSX.Element {
         theAlert('error', 'acr password is required')
         return
       }
-      registryData.credentials = { username: acrUsername, password: acrPassword }
+      registryData.credentials = {
+        username: acrUsername,
+        password: acrPassword
+      }
     }
 
     const formData = new FormData()
@@ -212,7 +218,7 @@ export default function TheRegistry(): JSX.Element {
             <>
               <div className="mt-4">
                 <label htmlFor="aws-public-key" className="block text-sm font-medium text-gray-700">
-                  AWS Public Key <span className="text-red-500">*</span>
+                  AWS Access Key <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -227,7 +233,7 @@ export default function TheRegistry(): JSX.Element {
                   AWS Secret Key <span className=" text-red-500">*</span>
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   id="aws-secret-key"
                   value={awsSecretKey}
                   onChange={(e) => setAwsSecretKey(e.target.value)}

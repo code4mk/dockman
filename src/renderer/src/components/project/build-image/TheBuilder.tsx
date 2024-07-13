@@ -76,6 +76,8 @@ function TheBuilder(): JSX.Element {
     formData.append('socket_room_name', 'project-1')
     formData.append('environment_id', selectedEnv)
     formData.append('image_version', imageVersion)
+    formData.append('project_id', getProjectDetail?.id)
+    formData.append('project_path', getProjectDetail?.project_path)
 
     http.post('/project/docker-build', formData).then((response) => {
       //console.log(response)

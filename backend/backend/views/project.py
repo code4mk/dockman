@@ -3,12 +3,14 @@ import json
 import requests
 from flask import Blueprint, request, jsonify, g
 from backend.models import db
-from backend.models.project import Project, ProjectDockerfile, ProjectEnvironment, ProjectDockerBuild
+from backend.models.project import Project, ProjectDockerfile, ProjectEnvironment, ProjectDockerBuild, ContainerRegistry
 from dock_craftsman.dockerfile_generator import DockerfileGenerator
 from itertools import groupby
 from json.decoder import JSONDecodeError
 from datetime import datetime
 import uuid
+import boto3
+import base64
 from backend.helpers.base import get_param
 
 bp = Blueprint('project', __name__)
@@ -186,6 +188,47 @@ def get_env_data(env_id):
     else:
         return jsonify({'error': 'Project environment not found'}), 404
 
+@bp.route('/container-registry/data-save', methods=['POST'])
+def container_registry_save():
+    project_id = get_param('project_id')
+    registry_data = {
+        "id": str(uuid.uuid4()),
+        "project_id": project_id,
+        "name": get_param('name'),
+        "slug": get_param('slug'),
+        "registry_config": get_param('registry_config')
+    }
+    
+    exist_registry = ContainerRegistry.query.filter_by(project_id = project_id).first()
+    
+    if exist_registry:
+        registry_data["id"] = exist_registry.id  # Preserve the original ID
+        db.session.merge(ContainerRegistry(**registry_data))
+    else:
+        db.session.add(ContainerRegistry(**registry_data))
+
+    # Commit changes to the database
+    db.session.commit()
+
+    # Return the project data
+    return jsonify({
+        "message": "saved successfully",
+    })
+    
+
+@bp.route('/container-registry/get-data/<project_id>', methods=['GET'])
+def get_container_registry_data(project_id):
+    # Query the ProjectDockerBuild object based on the environment_id
+    container_registry = ContainerRegistry.query.filter_by(project_id = project_id).first()
+
+    if container_registry:
+        # Convert the ProjectDockerBuild object to a dictionary using as_dict() method
+        data = container_registry.as_dict()
+        data['registry_config'] = ""
+        return jsonify({'data': data})
+    else:
+        return jsonify({'error': 'not found'}), 404
+    
 @bp.route('/create-dockerfile', methods=['POST'])
 def create_project_dockerfile():
     # Extract data from form-data
@@ -394,7 +437,7 @@ def get_file_data():
         return jsonify({'error': 'Path parameter is missing'}), 400
     
 @bp.route('get-template-lists', methods=['GET'])
-def get_nginx_lists():
+def get_template_lists():
     template_type = request.args.get('template_type')
     url = f"https://raw.githubusercontent.com/dockmandev/dockman-data-hub/main/{template_type}/{template_type}-template.json"
     response = requests.get(url)
@@ -402,7 +445,7 @@ def get_nginx_lists():
     return data
 
 @bp.route('get-template-content', methods=['GET'])
-def get_nginx_data():
+def get_template_content():
     url = request.args.get('path')
 
     if not url:
@@ -509,38 +552,40 @@ stop_background_task = {}
 @bp.route('docker-build', methods=['POST'])
 def docker_build():
     data = request.form
-    app_user_data_path = data.get('app_user_data')
-    the_socket_room_name = data.get('socket_room_name')
-    image_version = data.get('image_version')
+    app_user_data_path = get_param('app_user_data')
+    the_socket_room_name = get_param('socket_room_name')
+    image_version = get_param('image_version')
     
     # Extract project_id from the request parameters
-    environment_id = data.get('environment_id')
+    environment_id = get_param('environment_id')
+    project_id = get_param('project_id')
+    project_path = get_param('project_path')
 
     # Query the database for the project with the given project_id
-    project = ProjectDockerBuild.query.filter_by(environment_id=environment_id).first()
+    projectEnv = ProjectDockerBuild.query.filter_by(environment_id=environment_id).first()
 
     build_data = {
-         'data': {
-            'project_id': project.project_id,
-            'image_name': project.image_name,
+        'data': {
+            'project_id': project_id,
+            'image_name': projectEnv.image_name,
             'image_version': image_version,
-            'cache': project.cache,
-            'platform': project.platform,
-            'target': project.target,
-            'dockerfile_path': project.dockerfile_path,
-            'base_path': '/Users/code4mk/Documents/GitHub/kintaro/kintaro-backend',
+            'cache': projectEnv.cache,
+            'platform': projectEnv.platform,
+            'target': projectEnv.target,
+            'dockerfile_path': projectEnv.dockerfile_path,
+            'base_path': project_path,
             'docker_socket': 'unix:///Users/code4mk/.colima/default/docker.sock'
-         }
+        }
     }
     print(str(build_data))
-
+    
     global threads, stop_background_task
     import random
     task_key = random.randint(1, 100)
     with thread_lock:
         if task_key not in threads or not threads[task_key]['thread'].is_alive():
-            from backend.app import sio
-            threads[task_key] = {'thread': sio.start_background_task(background_task, task_key, app_user_data_path, build_data, the_socket_room_name )}
+            from backend.app import sio, app
+            threads[task_key] = {'thread': sio.start_background_task(background_task, app, task_key, app_user_data_path, build_data, the_socket_room_name, project_id)}
             stop_background_task[task_key] = False
             return f"Image building background task with key {task_key} started"
         
@@ -548,34 +593,35 @@ def docker_build():
 
 
 import subprocess
-def background_task(task_key, app_user_data_path, the_json_data, the_socket_room, is_image_push = None):
-    while not stop_background_task.get(task_key, False):
-        try:
-            from backend.app import sio
-            sio.emit('build_started', 'started', to=the_socket_room)
-            
-            data = (the_json_data)
+def background_task(app, task_key, app_user_data_path, the_json_data, the_socket_room, project_id, is_image_push=None):
+    with app.app_context():
+        while not stop_background_task.get(task_key, False):
+            try:
+                from backend.app import sio
+                sio.emit('build_started', 'started', to=the_socket_room)
+                
+                data = the_json_data
 
-            # Extract necessary information
-            image_name = data['data']['image_name']
-            image_version = data['data']['image_version']
-            platform = data['data']['platform']
-            dockerfile_path = data['data']['dockerfile_path']
+                # Extract necessary information
+                image_name = data['data']['image_name']
+                image_version = data['data']['image_version']
+                platform = data['data']['platform']
+                dockerfile_path = data['data']['dockerfile_path']
 
-            # Generate build-me.py inside base_path
-            the_project_path = data['data']['base_path']
-            build_me_script_path = os.path.join(the_project_path, 'build-me.py')
-            
-            
-            # Check if build-me.py exists, if not, create it and set permissions
-            if not os.path.exists(build_me_script_path):
+                # Generate build-me.py inside base_path
+                the_project_path = data['data']['base_path']
+                build_me_script_path = os.path.join(the_project_path, 'build-me.py')
+                
+                
+                # Check if build-me.py exists, if not, create it and set permissions
+                if not os.path.exists(build_me_script_path):
+                    with open(build_me_script_path, 'w') as build_me_file:
+                        pass  # Creates an empty file if it doesn't exist
+                    # Set permissions for read and write (0644)
+                    os.chmod(build_me_script_path, 0o644)
+
                 with open(build_me_script_path, 'w') as build_me_file:
-                    pass  # Creates an empty file if it doesn't exist
-                # Set permissions for read and write (0644)
-                os.chmod(build_me_script_path, 0o644)
-
-            with open(build_me_script_path, 'w') as build_me_file:
-                build_me_file.write('''\
+                    build_me_file.write('''\
 from dock_craftsman.docker_image_builder import DockerImageBuilder
 
 dockerfile_path = "{}"
@@ -591,49 +637,127 @@ b.set_content(dockerfile_content)
 b.build()
 '''.format(dockerfile_path, data['data']['docker_socket'], platform, image_name, image_version))
 
-            print("build-me.py generated successfully at:", build_me_script_path)
+                print("build-me.py generated successfully at:", build_me_script_path)
 
-            # Set up the virtual environment path
-            project_path = the_project_path
-            venv_name = '.dockman_venv'
-            #the_user_app_data_path = "/Users/code4mk/Documents/GitHub/drf-django/dockman-app/dockman"
-            the_user_app_data_path = app_user_data_path.replace(' ', '\ ')
+                # Set up the virtual environment path
+                project_path = the_project_path
+                venv_name = '.dockman_venv'
+                the_user_app_data_path = app_user_data_path.replace(' ', '\ ')
 
-            venv_path = os.path.join(the_user_app_data_path, venv_name)
-            
-            # Check if virtual environment already exists, if not, create it
-            if not os.path.exists(venv_path):
-                create_venv_cmd1 = f"python3 -m venv {venv_path}"
-                subprocess.run(create_venv_cmd1, shell=True, check=True)
-                combined_cmd = f"source {venv_path}/bin/activate && pip3 install dock-craftsman chardet && python3 {project_path}/build-me.py"
-            else:
-                combined_cmd = f"source {venv_path}/bin/activate && python3 {project_path}/build-me.py"
+                venv_path = os.path.join(the_user_app_data_path, venv_name)
+                
+                
+                # Check if virtual environment already exists, if not, create it
+                if not os.path.exists(venv_path):
+                    create_venv_cmd1 = f"python3 -m venv {venv_path}"
+                    subprocess.run(create_venv_cmd1, shell=True, check=True)
+                    combined_cmd = f"source {venv_path}/bin/activate && pip3 install dock-craftsman chardet && python3 {project_path}/build-me.py"
+                else:
+                    combined_cmd = f"source {venv_path}/bin/activate && python3 {project_path}/build-me.py"
 
-            # Run the bash script using subprocess.Popen
-            process = subprocess.Popen(combined_cmd, shell=True, cwd=project_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            
+                # Run the bash script using subprocess.Popen
+                process = subprocess.Popen(combined_cmd, shell=True, cwd=project_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
+                sio.emit('build_start', 'build start', to=the_socket_room)
+                
+                for stdout_line in iter(process.stdout.readline, b''):
+                    sio.emit('message', {'message': stdout_line.decode()}, to=the_socket_room)
 
-            sio.emit('build_start', 'build start', to=the_socket_room)
-            
-            for stdout_line in iter(process.stdout.readline, b''):
-                sio.emit('message', {'message': stdout_line.decode()}, to=the_socket_room)
+                for stderr_line in iter(process.stderr.readline, b''):
+                    sio.emit('message', {'message': stderr_line.decode()}, to=the_socket_room)
+                
+                sio.emit('build_completed', 'completed', to=the_socket_room)
+                
+                getRegistry = ContainerRegistry.query.filter_by(project_id=project_id).first()
+                the_registry_data = getRegistry.as_dict()
+        
+                registry_config = json.loads(the_registry_data["registry_config"])
+        
+                aws_credentials = {
+                'aws_access_key_id': registry_config.get("publicKey"),
+                'aws_secret_access_key': registry_config.get("secretKey"),
+                'aws_region': 'us-east-1'
+                }
+                ecr_url = registry_config.get('ecrUrl')
+                image = image_name
+                tag = image_version
+                
+                
+                import docker
+                the_client = docker.DockerClient(base_url="unix:///Users/code4mk/.colima/default/docker.sock")
+                ecr_push(
+                    aws_credentials=aws_credentials,
+                    ecr_url=ecr_url,
+                    image=image,
+                    tag=tag,
+                    the_docker_client=the_client,
+                    sio=sio,
+                    the_socket_room=the_socket_room
+                    )
+                
+                stop_background_task[task_key] = True
 
-            for stderr_line in iter(process.stderr.readline, b''):
-                sio.emit('message', {'message': stderr_line.decode()}, to=the_socket_room)
-            
-            sio.emit('build_completed', 'completed', to=the_socket_room)
-            
-            # if is_image_push == None:
-            #     print('docker image pushing')
-            #     docker_push(sio, the_socket_room=the_socket_room, image_name=image_name, image_version=image_version, project_path=project_path)
-            
-            stop_background_task[task_key] = True
+            except Exception as e:
+                stop_background_task[task_key] = True
+                print(f"Error occurred while building Docker image: {e}")
+                
+            sleep(1)
 
-        except Exception as e:
-            stop_background_task[task_key] = True
-            print(f"Error occurred while building Docker image: {e}")
-            
-        sleep(1)
+def ecr_push(sio, the_socket_room, aws_credentials, the_docker_client, ecr_url, image, tag):
+    """
+    Pushes a Docker image to Amazon ECR with real-time status updates via Socket.IO.
+    
+    Parameters:
+    - sio: Socket.IO server instance.
+    - the_socket_room: The room to send updates to.
+    - aws_credentials: A dictionary with keys 'aws_access_key_id', 'aws_secret_access_key', and 'aws_region'.
+    - ecr_url: The URL of the ECR repository.
+    - image: The name of the Docker image to push.
+    - tag: The tag of the Docker image to push.
+    """
+    AWS_ACCESS_KEY_ID = aws_credentials['aws_access_key_id']
+    AWS_SECRET_ACCESS_KEY = aws_credentials['aws_secret_access_key']
+    AWS_DEFAULT_REGION = aws_credentials['aws_region']
+    ECR_URL = ecr_url
+    IMAGE_NAME = image
+    IMAGE_TAG = tag
+
+    # Set up AWS session
+    session = boto3.Session(
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        region_name=AWS_DEFAULT_REGION,
+    )
+
+    ecr_client = session.client('ecr')
+
+    #Get ECR login token
+    auth_token = ecr_client.get_authorization_token()
+    username, password = base64.b64decode(auth_token['authorizationData'][0]['authorizationToken']).decode().split(':')
+    proxy_endpoint = auth_token['authorizationData'][0]['proxyEndpoint']
+    
+    # Set up Docker client
+    client = the_docker_client
+
+    # Log in to Docker with ECR credentials
+    client.login(username=username, password=password, registry=proxy_endpoint)
+    
+    # Tag the Docker image
+    full_image_name = f"{ECR_URL}/{IMAGE_NAME}:{IMAGE_TAG}"
+    client.images.get(f"{IMAGE_NAME}:{IMAGE_TAG}").tag(full_image_name)
+
+    # Push the Docker image to ECR with status updates
+    sio.emit('push_started', {'message': 'started'}, to=the_socket_room)
+    push_logs = client.images.push(full_image_name, stream=True, decode=True)
+
+    for log in push_logs:
+        if 'status' in log:
+            status_message = log['status']
+            detail_message = log.get('id', '') + ': ' + status_message
+            sio.emit('push_status', {'message': detail_message}, room=the_socket_room)
+
+    sio.emit('push_complete', {'message': 'Docker image pushed to ECR successfully'}, room=the_socket_room)
+    print("Docker image pushed to ECR successfully")
 
 def docker_push(sio, the_socket_room, image_name, image_version, project_path):
     region = ""
