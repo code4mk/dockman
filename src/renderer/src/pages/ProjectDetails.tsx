@@ -11,7 +11,7 @@ import SupervisordTab from '@components/project/SupervisordTab'
 import BuildImageTab from '@components/project/build-image/BuildImageTab'
 import { useAppSelector, useAppDispatch } from '@utils/redux/kit'
 import { projectAction } from '@store/global'
-import TemplateDrawer from '@components/project/TemplateDrawer'
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
