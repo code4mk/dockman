@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import LoaderButton from '@components/global/LoaderButton'
@@ -22,7 +22,6 @@ export default function AddEnvModal({
   modalStatus,
   onDataFetch
 }: AddModalProps): JSX.Element {
-
   const [processing, setProcessing] = useState(false)
   const [openModal, setOpenModal] = useState(false)
   const [envName, setEnvName] = useState('')
@@ -36,6 +35,8 @@ export default function AddEnvModal({
   }, [modalData, setOpenModal, modalStatus])
 
   function modalClose(): void {
+    setEnvName('')
+    setProcessing(false)
     onModalClose({
       modalName: 'addEnvModal'
     })

@@ -1,79 +1,129 @@
+# Direct import
 import os
 import json
 import requests
-from flask import Blueprint, request, jsonify, g
-from backend.models import db
-from backend.models.project import Project, ProjectDockerfile, ProjectEnvironment, ProjectDockerBuild, ContainerRegistry
-from dock_craftsman.dockerfile_generator import DockerfileGenerator
-from itertools import groupby
-from json.decoder import JSONDecodeError
-from datetime import datetime
 import uuid
 import boto3
 import base64
+
+# Third Party source
+from flask import Blueprint, request, jsonify, g
+from itertools import groupby
+from json.decoder import JSONDecodeError
+from datetime import datetime
+
+# Own source
+from backend.models import db
+from backend.models.project import (
+    Project,
+    ProjectPath,
+    ProjectEnvironment,
+    ProjectEnviornmentValue,
+    ContainerRegistry
+)
+from dock_craftsman.dockerfile_generator import DockerfileGenerator
 from backend.helpers.base import get_param
 
 bp = Blueprint('project', __name__)
 
 @bp.route('/create', methods=['POST'])
 def create_project():
-    # Extract data from form-data
-    name = request.form.get('project_name')
-    project_path = request.form.get('project_path')
-    has_registry = request.form.get('has_registry')
-    # template_name = request.form.get('template_name')
-    # dockerfile_path = request.form.get('dockerfile_path')
+    name = get_param('project_name')
+    project_path = get_param('project_path')
 
-    # Create a new Project instance
-    new_project = Project(
-        name=name,
-        project_path=project_path,
-        owner_id = 'd2e88f60-2c2e-4bc9-ae4e-8a3427b00931',
-        created_at = datetime.now(),
-        has_registry = True if has_registry.lower() == 'yes' else False
-    )
+    try:
+        # Create a new Project instance
+        new_project = Project(
+            id = str(uuid.uuid4()),
+            name=name,
+            company_id='d2e88f60-2c2e-4bc9-ae4e-8a3427b00931'
+        )
 
-    # Add the new project to the database
-    db.session.add(new_project)
-    db.session.commit()
+        # Add the new project to the session and flush to get its ID
+        db.session.add(new_project)
+        db.session.flush()  # This makes the ID available without committing the transaction
 
-    # Query the database to check if the data has been added
-    added_project = Project.query.filter_by(name=name).first()
+        # Use the new project's ID to create a ProjectPath instance
+        new_project_path = ProjectPath(
+            id = str(uuid.uuid4()),
+            project_id=new_project.id,
+            user_id='d2e88f60-2c2e-4bc9-ae4e-8a3427b00931',
+            project_path=project_path
+        )
 
-    if added_project:
-        # Project has been added successfully
+        # Add the new project path to the session
+        db.session.add(new_project_path)
+
+        # Commit the transaction
+        db.session.commit()
+
+        # If we reach this point, both inserts were successful
         return jsonify({
             'message': 'Project created successfully',
-            'project_id': added_project.id,
-            'name': added_project.name,
-            'project_path': added_project.project_path,
+            'project_id': new_project.id,
+            'name': new_project.name
         })
-    else:
-        # Failed to add the project
-        return jsonify({'message': 'Failed to add the project'}), 500 
-    
+
+    except Exception as e:
+        # If there is any error, roll back the transaction
+        db.session.rollback()
+        return jsonify({'message': 'Failed to add the project', 'error': str(e)}), 500
+
 @bp.route('/get-all', methods=['GET'])
 def get_all_projects():
-    projects = Project.query.all()
-    project_list = [{'id': str(project.id), 'name': project.name, 'project_path': project.project_path} for project in projects]
-    return jsonify({'data': project_list})
+    try:
+        # Query all projects
+        projects = Project.query.all()
+
+        # Serialize the project data
+        projects_data = [{'id': project.id, 'name': project.name} for project in projects]
+
+        # Return the serialized data as a JSON response
+        return jsonify(projects_data)
+
+    except Exception as e:
+        return jsonify({'message': 'Failed to retrieve projects', 'error': str(e)}), 500
+
 
 @bp.route('/get/<project_id>', methods=['GET'])
 def get_single_project(project_id):
-    project = Project.query.get_or_404(str(project_id))
-    project_data = {'id': str(project.id), 'name': project.name, 'project_path': project.project_path,}
-    return jsonify({'project': project_data})
+    user_id = 'd2e88f60-2c2e-4bc9-ae4e-8a3427b00931'  # Replace this with the actual user_id as needed
+
+    try:
+        # Query the project by its ID
+        project = Project.query.get(project_id)
+        
+        if not project:
+            return jsonify({'message': 'Project not found'}), 404
+
+        # Query the project path by user_id and project_id
+        project_path = ProjectPath.query.filter_by(user_id=user_id, project_id=project_id).first()
+
+        if not project_path:
+            return jsonify({'message': 'Project path not found'}), 404
+
+        # Create the response object
+        response = {
+            'id': project.id,
+            'name': project.name,
+            'project_path': project_path.project_path
+        }
+
+        # Return the response object as JSON
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({'message': 'Failed to retrieve project', 'error': str(e)}), 500
+
 
 @bp.route('/edit/<int:project_id>', methods=['PUT'])
 def edit_project(project_id):
     project = Project.query.get_or_404(project_id)
-    data = request.form  # Assuming you're using form data for editing (adjust if using JSON)
-
-    # Extract data from form-data
-    name = data.get('name')
-    project_path = data.get('project_path')
-    template_name = data.get('template_name')
-    dockerfile_path = data.get('dockerfile_path')
+    
+    name = get_param('name')
+    project_path = get_param('project_path')
+    template_name = get_param('template_name')
+    dockerfile_path = get_param('dockerfile_path')
 
     # Update project data
     project.name = name or project.name
@@ -102,34 +152,88 @@ def delete_project(project_id):
 
 @bp.route('/environment/create', methods=['POST'])
 def env_create():
-    name = request.form.get('env_name')
-    project_id = request.form.get('project_id')
+    try:
+        # Extract parameters using get_param utility
+        name = get_param('env_name')
+        project_id = get_param('project_id')
 
-    new_item = ProjectEnvironment(
-        id = str(uuid.uuid4()),
-        name=name,
-        project_id=project_id,
-        created_at = datetime.now(),
-    )
+        if not name or not project_id:
+            return jsonify({'message': 'env_name and project_id are required'}), 400
 
-    db.session.add(new_item)
-    db.session.commit()
-    
-    return jsonify({
-        'message': 'environment created successfully',
-    })
+        # Create a new ProjectEnvironment instance
+        new_item = ProjectEnvironment(
+            id = str(uuid.uuid4()),
+            name=name,
+            project_id=project_id,
+            created_at=datetime.now()
+        )
+
+        # Add the new environment to the database session
+        db.session.add(new_item)
+        db.session.commit()
+
+        # Return a success response with the created environment details
+        return jsonify({
+            'message': 'Environment created successfully',
+            'environment_id': new_item.id,
+            'name': new_item.name
+        }), 201
+
+    except Exception as e:
+        # Roll back the session in case of an error
+        db.session.rollback()
+        return jsonify({'message': 'Failed to create environment', 'error': str(e)}), 500
     
 @bp.route('/environment/<project_id>/get-all', methods=['GET'])
 def get_all_env(project_id):
-    projects = ProjectEnvironment.query.filter_by(project_id=project_id).all()
-    project_list = [{'id': str(project.id), 'name': project.name, 'project_id': project.id} for project in projects]
-    return jsonify({'data': project_list})
+    try:
+        # Query all environments for the given project_id
+        environments = ProjectEnvironment.query.filter_by(project_id=project_id).all()
+        
+        if not environments:
+            return jsonify([]), 200  # Return an empty list if no environments are found
+
+        # Serialize the environment data
+        environment_list = [
+            {
+                'id': str(env.id),
+                'name': env.name,
+                'project_id': str(env.project_id),
+                'created_at': env.created_at.isoformat()  # Assuming `created_at` is a datetime field
+            } 
+            for env in environments
+        ]
+
+        # Return the serialized data as a JSON response
+        return jsonify(environment_list)
+
+    except Exception as e:
+        return jsonify({'message': 'Failed to retrieve environments', 'error': str(e)}), 500
+
 
 @bp.route('/environment/get/<env_id>', methods=['GET'])
 def get_single_env(env_id):
-    project = ProjectEnvironment.query.get_or_404(str(env_id))
-    project_data = {'id': str(project.id), 'name': project.name, 'project_id': project.project_id,}
-    return jsonify({'data': project_data})
+    try:
+        # Retrieve the environment by its ID using filter_by
+        env = ProjectEnvironment.query.filter_by(id=env_id).first()
+
+        if not env:
+            return jsonify({'message': 'Environment not found'}), 404
+
+        # Create the response data
+        env_data = {
+            'id': str(env.id),
+            'name': env.name,
+            'project_id': str(env.project_id),  # Ensure project_id is a string
+            'created_at': env.created_at.isoformat()  # Assuming `created_at` is a datetime field
+        }
+
+        # Return the environment data as JSON
+        return jsonify(env_data)
+
+    except Exception as e:
+        return jsonify({'message': 'Failed to retrieve environment', 'error': str(e)}), 500
+
 
 @bp.route('/environment/delete/<env_id>', methods=['DELETE'])
 def delete_env(env_id):
@@ -144,29 +248,26 @@ def env_data_save():
     # Extract data using get_param
     env_id = get_param('environment_id')
     
-    # Create a dictionary to hold the project data
-    project_data = {
+    env_data = {
         "id": str(uuid.uuid4()),
         "environment_id": env_id,
         "image_name": get_param('image_name'),
         "cache": get_param('cache'),
         "platform": get_param('platform'),
         "target": get_param('target'),
-        "dockerfile_path": get_param('dockerfile_path'),
         "project_id": get_param('project_id'),
-        "registry_id": '48c15775-5233-46f0-929a-8d99476064bb',
         "is_registry_publish": True if get_param('is_registry_publish') == 'yes' else False,
-        # "registry_info": json.dumps(get_param('registry_info')) if get_param('registry_info') else ""
+        "registry_info": get_param('registry_info') if get_param('registry_info') else "",
+        "argument_info": get_param('argument_info') if get_param('argument_info') else ""
     }
 
-    # Check if the project exists and merge data
-    existing_project = ProjectDockerBuild.query.filter_by(environment_id=env_id).first()
+    the_env_data = ProjectEnviornmentValue.query.filter_by(environment_id=env_id).first()
 
-    if existing_project:
-        project_data["id"] = existing_project.id  # Preserve the original ID
-        db.session.merge(ProjectDockerBuild(**project_data))
+    if the_env_data:
+        env_data["id"] = the_env_data.id
+        db.session.merge(ProjectEnviornmentValue(**env_data))
     else:
-        db.session.add(ProjectDockerBuild(**project_data))
+        db.session.add(ProjectEnviornmentValue(**env_data))
 
     # Commit changes to the database
     db.session.commit()
@@ -176,17 +277,23 @@ def env_data_save():
         "message": "saved successfully",
     })
     
-@bp.route('/environment/data/<env_id>', methods=['GET'])
+@bp.route('/environment/<env_id>/get-data', methods=['GET'])
 def get_env_data(env_id):
-    # Query the ProjectDockerBuild object based on the environment_id
-    project = ProjectDockerBuild.query.filter_by(environment_id=str(env_id)).first()
+    try:
+        # Retrieve the environment data by environment_id
+        the_env_data = ProjectEnviornmentValue.query.filter_by(environment_id=str(env_id)).first()
 
-    if project:
-        # Convert the ProjectDockerBuild object to a dictionary using as_dict() method
-        project_data = project.as_dict()
-        return jsonify({'data': project_data})
-    else:
-        return jsonify({'error': 'Project environment not found'}), 404
+        if the_env_data:
+            # Convert the environment data to a dictionary
+            env_data = the_env_data.as_dict()  # Ensure this method exists in the model
+            return jsonify(env_data)
+        else:
+            # Return an empty object if no environment data is found
+            return jsonify({})
+
+    except Exception as e:
+        return jsonify({'message': 'Failed to retrieve environment data', 'error': str(e)}), 500
+
 
 @bp.route('/container-registry/data-save', methods=['POST'])
 def container_registry_save():
@@ -225,162 +332,10 @@ def get_container_registry_data(project_id):
         # Convert the ProjectDockerBuild object to a dictionary using as_dict() method
         data = container_registry.as_dict()
         data['registry_config'] = ""
-        return jsonify({'data': data})
+        return jsonify(data)
     else:
         return jsonify({'error': 'not found'}), 404
     
-@bp.route('/create-dockerfile', methods=['POST'])
-def create_project_dockerfile():
-    # Extract data from form-data
-    project_id = request.form.get('project_id')
-    method = request.form.get('method')
-    title = request.form.get('title')
-    data = request.form.get('data')
-    stage = request.form.get('stage')
-
-    # Create a new ProjectDockerfile instance
-    new_project_dockerfile = ProjectDockerfile(
-        project_id=project_id,
-        method=method,
-        title=title,
-        data=data,
-        stage=stage
-    )
-
-    # Add the new project dockerfile to the database
-    db.session.add(new_project_dockerfile)
-    db.session.commit()
-
-    # Query the database to check if the data has been added
-    added_dockerfile = ProjectDockerfile.query.filter_by(project_id=project_id, stage=stage, method=method).first()
-
-    if added_dockerfile:
-        # Dockerfile has been added successfully
-        return jsonify({
-            'message': 'Dockerfile item created successfully',
-            'dockerfile_id': added_dockerfile.id,
-            'project_id': added_dockerfile.project_id,
-            'method': added_dockerfile.method,
-            'title': added_dockerfile.title,
-            'data': added_dockerfile.data,
-            'stage': added_dockerfile.stage
-        })
-    else:
-        # Failed to add the dockerfile
-        return jsonify({'message': 'Failed to add the dockerfile item'}), 500
-
-@bp.route('/delete-dockerfile/<int:id>', methods=['DELETE'])
-def delete_dockerfile(id):
-    the_item = ProjectDockerfile.query.get(id)
-    db.session.delete(the_item)
-    db.session.commit()
-
-    return jsonify({'message': 'Delete successfully'})
-
-
-@bp.route('/get-all-dockerfiles/<int:project_id>', methods=['GET'])
-def get_all_dockerfiles(project_id):
-    dockerfiles = ProjectDockerfile.query.filter_by(project_id=project_id).order_by(ProjectDockerfile.stage).all()
-
-    grouped_dockerfiles = {key: list(group) for key, group in groupby(dockerfiles, key=lambda x: x.stage)}
-
-    dockerfile_list = []
-    for stage, dockerfiles in grouped_dockerfiles.items():
-        stage_dockerfiles = []
-        for dockerfile in dockerfiles:
-            try:
-                if dockerfile.method == 'env':
-                    parsed_data = json.loads(dockerfile.data)
-                else:
-                    parsed_data = json.loads(dockerfile.data)
-            except JSONDecodeError as e:
-                # Handle the error (e.g., log it, provide a default value, etc.)
-                parsed_data = None
-                # You can also raise the exception again if you want to propagate it
-                # raise e
-
-            stage_dockerfiles.append({
-                'id': dockerfile.id,
-                'project_id': dockerfile.project_id,
-                'method': dockerfile.method,
-                'title': dockerfile.title,
-                'data': parsed_data,
-                'stage': dockerfile.stage
-            })
-
-        dockerfile_list.append({
-            'stage': stage,
-            'dockerfiles': stage_dockerfiles
-        })
-
-    return jsonify({'data': dockerfile_list})
-
-
-@bp.route('/the-dockerfile/<int:project_id>', methods=['GET'])
-def the_dockerfile(project_id):
-    dockerfiles = ProjectDockerfile.query.filter_by(project_id=project_id).order_by(ProjectDockerfile.stage).all()
-
-    grouped_dockerfiles = {key: list(group) for key, group in groupby(dockerfiles, key=lambda x: x.stage)}
-
-    dockerfile_list = []
-    for stage, dockerfiles in grouped_dockerfiles.items():
-        stage_dockerfiles = []
-        for dockerfile in dockerfiles:
-            try:
-                if dockerfile.method == 'env':
-                    parsed_data = json.loads(dockerfile.data)
-                else:
-                    parsed_data = json.loads(dockerfile.data)
-            except JSONDecodeError as e:
-                # Handle the error (e.g., log it, provide a default value, etc.)
-                parsed_data = None
-                # You can also raise the exception again if you want to propagate it
-                # raise e
-
-            stage_dockerfiles.append({
-                'id': dockerfile.id,
-                'project_id': dockerfile.project_id,
-                'method': dockerfile.method,
-                'title': dockerfile.title,
-                'data': parsed_data,
-                'stage': dockerfile.stage
-            })
-
-        dockerfile_list.append({
-            'stage': stage,
-            'dockerfiles': stage_dockerfiles
-        })
-
-    # Instantiate the DockerfileGenerator
-    dockerfile = DockerfileGenerator()
-
-    # Loop through the provided data and generate Python code
-    for dockerfile_data in dockerfile_list:
-        dockerfile.stage(dockerfile_data["stage"])
-        for dockerfile_command in dockerfile_data["dockerfiles"]:
-            method = dockerfile_command["method"]
-            if method == "from_":
-                dockerfile.from_(dockerfile_command["data"])                
-            elif method == "env":
-                for env_data in dockerfile_command["data"]:
-                    dockerfile.env(env_data["key"], env_data["value"])
-            elif method == "apt_install":
-                dockerfile.apt_install(dockerfile_command["data"])
-            elif method == "run":
-                dockerfile.run(dockerfile_command["data"])
-            elif method == "workdir":
-                dockerfile.workdir(dockerfile_command["data"])
-            elif method == "expose":
-                dockerfile.expose(dockerfile_command["data"])
-            elif method == "cmd":
-                dockerfile.cmd(dockerfile_command["data"])
-            # Add more conditions for other methods if needed
-
-    # Get the content of the generated Dockerfile
-    generated_dockerfile = dockerfile.get_content()
-    return jsonify({'data': generated_dockerfile})
-
-import os
 @bp.route('/save-content', methods=['POST'])
 def save_content():
     data = request.form
@@ -459,89 +414,6 @@ def get_template_content():
     except requests.exceptions.RequestException as e:
         return f'Request failed: {str(e)}', 500
 
-@bp.route('/save-image-build', methods=['POST'])
-def save_image_build():
-    # Extract data from form-data
-    project_id = request.form.get('project_id')
-
-    # Check if the project_id exists
-    project = ProjectDockerBuild.query.filter_by(project_id=project_id).first()
-
-    if project:
-        # Project exists, update the project
-        project.image_name = request.form.get('image_name')
-        project.image_version = request.form.get('image_version')
-        project.cache = request.form.get('cache')
-        project.platform = request.form.get('platform')
-        project.target = request.form.get('target')
-        project.dockerfile_path = request.form.get('dockerfile_path')
-        # Update other fields as needed
-    else:
-        # Project does not exist, create a new project
-        image_name = request.form.get('image_name')
-        image_version = request.form.get('image_version')
-        cache = request.form.get('cache')
-        platform = request.form.get('platform')
-        target = request.form.get('target')
-        dockerfile_path = request.form.get('dockerfile_path')
-
-        # Create a new Project instance
-        project = ProjectDockerBuild(
-            project_id=project_id,
-            image_name=image_name,
-            image_version=image_version,
-            cache=cache,
-            platform=platform,
-            target=target,
-            dockerfile_path=dockerfile_path
-        )
-
-        # Add the new project to the database
-        db.session.add(project)
-
-    # Commit changes to the database
-    db.session.commit()
-
-    # Return the project data
-    return jsonify({
-        "message": "Project saved successfully",
-        "project": {
-            "project_id": project.project_id,
-            "image_name": project.image_name,
-            "image_version": project.image_version,
-            "cache": project.cache,
-            "platform": project.platform,
-            "target": project.target,
-            "dockerfile_path": project.dockerfile_path
-            # Add other fields as needed
-        }
-    })
-
-@bp.route('/get-image-build', methods=['GET'])
-def get_image_build():
-    # Extract project_id from the request parameters
-    project_id = request.args.get('project_id')
-
-    # Query the database for the project with the given project_id
-    project = ProjectDockerBuild.query.filter_by(project_id=project_id).first()
-
-    if project:
-        # Project found, return its details
-        return jsonify({
-            'project_id': project.id,
-            'image_name': project.image_name,
-            'image_version': project.image_version,
-            'cache': project.cache,
-            'platform': project.platform,
-            'target': project.target,
-            'dockerfile_path': project.dockerfile_path
-            # Add other fields as needed
-        })
-    else:
-        # Project not found, return an error message
-        return jsonify({'error': 'Project not found'})
-
-
 from threading import Lock
 from time import sleep
 
@@ -562,23 +434,22 @@ def docker_build():
     project_path = get_param('project_path')
 
     # Query the database for the project with the given project_id
-    projectEnv = ProjectDockerBuild.query.filter_by(environment_id=environment_id).first()
+    projectEnv = ProjectEnviornmentValue.query.filter_by(environment_id=environment_id).first()
 
     build_data = {
-        'data': {
-            'project_id': project_id,
-            'image_name': projectEnv.image_name,
-            'image_version': image_version,
-            'cache': projectEnv.cache,
-            'platform': projectEnv.platform,
-            'target': projectEnv.target,
-            'dockerfile_path': projectEnv.dockerfile_path,
-            'base_path': project_path,
-            'docker_socket': 'unix:///Users/code4mk/.colima/default/docker.sock'
-        }
+        'project_id': project_id,
+        'image_name': projectEnv.image_name,
+        'image_version': image_version,
+        'cache': projectEnv.cache,
+        'platform': projectEnv.platform,
+        'target': projectEnv.target,
+        'dockerfile_path': projectEnv.dockerfile_path,
+        'base_path': project_path,
+        'registry_info': json.loads(projectEnv.registry_info),
+        'argument_info': json.loads(projectEnv.argument_info),
+        'docker_socket': 'unix:///Users/code4mk/.colima/default/docker.sock'
     }
-    print(str(build_data))
-    
+
     global threads, stop_background_task
     import random
     task_key = random.randint(1, 100)
@@ -593,23 +464,22 @@ def docker_build():
 
 
 import subprocess
-def background_task(app, task_key, app_user_data_path, the_json_data, the_socket_room, project_id, is_image_push=None):
+def background_task(app, task_key, app_user_data_path, the_build_data, the_socket_room, project_id, is_image_push=None):
     with app.app_context():
         while not stop_background_task.get(task_key, False):
             try:
                 from backend.app import sio
                 sio.emit('build_started', 'started', to=the_socket_room)
                 
-                data = the_json_data
-
+   
                 # Extract necessary information
-                image_name = data['data']['image_name']
-                image_version = data['data']['image_version']
-                platform = data['data']['platform']
-                dockerfile_path = data['data']['dockerfile_path']
+                image_name = the_build_data['image_name']
+                image_version = the_build_data['image_version']
+                platform = the_build_data['platform']
+                dockerfile_path = the_build_data['dockerfile_path']
 
                 # Generate build-me.py inside base_path
-                the_project_path = data['data']['base_path']
+                the_project_path = the_build_data['base_path']
                 build_me_script_path = os.path.join(the_project_path, 'build-me.py')
                 
                 
@@ -635,7 +505,7 @@ b.set_name('{}')
 b.set_tag('{}')
 b.set_content(dockerfile_content)
 b.build()
-'''.format(dockerfile_path, data['data']['docker_socket'], platform, image_name, image_version))
+'''.format(dockerfile_path, the_build_data['docker_socket'], platform, image_name, image_version))
 
                 print("build-me.py generated successfully at:", build_me_script_path)
 
@@ -672,28 +542,31 @@ b.build()
                 the_registry_data = getRegistry.as_dict()
         
                 registry_config = json.loads(the_registry_data["registry_config"])
-        
-                aws_credentials = {
-                'aws_access_key_id': registry_config.get("publicKey"),
-                'aws_secret_access_key': registry_config.get("secretKey"),
-                'aws_region': 'us-east-1'
-                }
-                ecr_url = registry_config.get('ecrUrl')
+
+                import docker
+                the_client = docker.DockerClient(base_url="unix:///Users/code4mk/.colima/default/docker.sock")
                 image = image_name
                 tag = image_version
                 
+                if the_registry_data["slug"] == 'aws-ecr': 
                 
-                import docker
-                the_client = docker.DockerClient(base_url="unix:///Users/code4mk/.colima/default/docker.sock")
-                ecr_push(
-                    aws_credentials=aws_credentials,
-                    ecr_url=ecr_url,
-                    image=image,
-                    tag=tag,
-                    the_docker_client=the_client,
-                    sio=sio,
-                    the_socket_room=the_socket_room
-                    )
+                    aws_credentials = {
+                    'aws_access_key_id': registry_config.get("publicKey"),
+                    'aws_secret_access_key': registry_config.get("secretKey"),
+                    'aws_region': the_build_data["registry_info"].get("aws_region")
+                    }
+                
+                    ecr_url = the_build_data["registry_info"].get("ecr_url")
+                
+                    ecr_push(
+                        aws_credentials=aws_credentials,
+                        ecr_url=ecr_url,
+                        image=image,
+                        tag=tag,
+                        the_docker_client=the_client,
+                        sio=sio,
+                        the_socket_room=the_socket_room
+                        )
                 
                 stop_background_task[task_key] = True
 

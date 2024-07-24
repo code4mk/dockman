@@ -1,5 +1,3 @@
-# myapp/views/home.py
-
 from flask import Blueprint, jsonify
 from dock_craftsman.docker.container import TheContainer
 from backend.helpers.base import get_param
@@ -43,7 +41,6 @@ def remove(container_id):
 
 @bp.route('/exec/<container_id>', methods=['get'])
 def exec(container_id):
-    
     container = TheContainer(docker_socket="unix:///Users/code4mk/.colima/default/docker.sock")
     command = get_param('command')
     the_pwd = get_param('the_pwd') if get_param('pwd') != '' else None

@@ -61,8 +61,8 @@ function Image(): JSX.Element {
         onModalClose={modalCloseEmit}
         modalData={selectedImage}
       />
-      <div className=" min-h-[90vh] bg-gray-100 px-4 ">
-        <div className="flex items-center justify-between mb-1">
+      <div className=" min-h-[90vh] bg-gray-100">
+        <div className="flex items-center justify-between mb-1 px-4 ">
           {/* Left - Title */}
           <div className="mt-5">
             <h1 className="text-2xl font-bold">Image List</h1>
@@ -89,8 +89,8 @@ function Image(): JSX.Element {
         </div>
 
         {/* Container List */}
-        <div>
-          <div className="mt-6">
+        <div className="max-h-[84vh] min-h-[84vh] overflow-y-auto p-4 ">
+          <div className="mt-1">
             <ul
               role="list"
               className="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"

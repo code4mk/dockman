@@ -5,6 +5,7 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { http } from '@utils/http'
 import toast from 'react-hot-toast'
+import { useAppSelector } from '@utils/redux/kit'
 
 interface AddModalProps {
   modalName: string
@@ -21,6 +22,9 @@ export default function EnvValueDrawer({
   modalStatus,
   onDataFetch
 }: AddModalProps): JSX.Element {
+
+  const getProjectDetail: any = useAppSelector((state: any) => state.global.projectDetails)
+
   const [open, setOpen] = useState(true)
   const [openModal, setOpenModal] = useState(false)
   const [environments, setEnviornments] = useState([] as any)
@@ -30,6 +34,9 @@ export default function EnvValueDrawer({
   const [theTarget, setTheTarget] = useState('')
   const [dockerfilePath, setDockerfilePath] = useState('/the-dockman/dockerfiles/app.Dockerfile')
   const [isRegistryPublish, setIsRegistryPublish] = useState('' as any)
+  const [awsRegion, setAwsRegion] = useState('')
+  const [awsEcrUrl, setAwsEcrUrl] = useState('')
+  const [registryInfo, setRegistryInfo] = useState({} as any)
 
   useEffect(() => {
     if (modalName === 'envDrawerOpen' && modalStatus) {
@@ -44,6 +51,14 @@ export default function EnvValueDrawer({
     }
   }, [modalData, setOpenModal, modalStatus])
 
+  useEffect(() => {
+    if (getProjectDetail?.id && modalStatus) {
+      http.get(`project/container-registry/get-data/${getProjectDetail?.id}`).then((response) => {
+        setRegistryInfo(response?.data)
+      })
+    }
+  }, [getProjectDetail, modalStatus])
+
   function modalClose(): void {
     setOpenModal(false)
     onModalClose({
@@ -52,8 +67,8 @@ export default function EnvValueDrawer({
   }
 
   function getEnvData(id: any): void {
-    http.get(`/project/environment/data/${id}`).then((response) => {
-      const theEData: any = response.data?.data
+    http.get(`/project/environment/${id}/get-data`).then((response) => {
+      const theEData: any = response.data
       setImageName(theEData?.image_name)
       setTheCache(theEData?.cache)
       setThePlatform(theEData?.platform)
@@ -61,6 +76,12 @@ export default function EnvValueDrawer({
       setDockerfilePath(theEData?.dockerfile_path)
       const registryPublishStatus = theEData?.is_registry_publish == true ? 'yes' : 'no'
       setIsRegistryPublish(registryPublishStatus)
+
+      if (registryPublishStatus) {
+        const getRegistryConfig: any = JSON.parse(theEData?.registry_info)
+        setAwsEcrUrl(getRegistryConfig?.ecr_url)
+        setAwsRegion(getRegistryConfig?.aws_region)
+      }
     })
   }
 
@@ -74,7 +95,16 @@ export default function EnvValueDrawer({
     formData.append('target', theTarget)
     formData.append('dockerfile_path', dockerfilePath)
     formData.append('is_registry_publish', isRegistryPublish)
-    http.post('/project/environment/data-save', formData).then((response) => {
+
+    if (registryInfo?.slug === 'aws-ecr') {
+      const registryData: any = {
+        ecr_url: awsEcrUrl,
+        aws_region: awsRegion
+      }
+      formData.append('registry_info', JSON.stringify(registryData))
+    }
+
+    http.post('/project/environment/data-save', formData).then((response: any) => {
       toast.success('Environment value save', {
         duration: 3000,
         position: 'top-center',
@@ -201,6 +231,7 @@ export default function EnvValueDrawer({
                       <input
                         required={true}
                         type="text"
+                        disabled
                         className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                         value={dockerfilePath}
                         onInput={(event: any) => setDockerfilePath(event.target.value)}
@@ -227,6 +258,43 @@ export default function EnvValueDrawer({
                         </select>
                       </div>
                     </div>
+
+                    {registryInfo?.slug === 'aws-ecr' && isRegistryPublish == 'yes' && (
+                      <div>
+                        <div className="mb-2 ">
+                          <label
+                            htmlFor="content-name"
+                            className="text-sm font-medium text-gray-700 block"
+                          >
+                            AWS Region
+                          </label>
+                          <input
+                            required={true}
+                            type="text"
+                            className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                            value={awsRegion}
+                            onInput={(event: any) => setAwsRegion(event.target.value)}
+                            placeholder="region"
+                          />
+                        </div>
+                        <div className="mb-2 ">
+                          <label
+                            htmlFor="content-name"
+                            className="text-sm font-medium text-gray-700 block"
+                          >
+                            AWS ecr url
+                          </label>
+                          <input
+                            required={true}
+                            type="text"
+                            className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                            value={awsEcrUrl}
+                            onInput={(event: any) => setAwsEcrUrl(event.target.value)}
+                            placeholder="ecr url"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="flex justify-start mt-5">
                     <p

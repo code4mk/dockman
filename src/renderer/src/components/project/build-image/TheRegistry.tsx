@@ -49,8 +49,8 @@ export default function TheRegistry(): JSX.Element {
 
   function getRegistryData(id): void {
     http.get(`/project/container-registry/get-data/${id}`).then((response: any) => {
-      let theSlug = response?.data?.data?.slug
-      let index = container_registry_lists.findIndex((item: any) => item.registry_slug === theSlug)
+      let theSlug = response?.data?.slug
+      let index = container_registry_lists?.findIndex((item: any) => item.registry_slug === theSlug)
       setSelectedRegistry(container_registry_lists[index])
     })
   }
@@ -77,13 +77,18 @@ export default function TheRegistry(): JSX.Element {
       credentials: {}
     }
 
-    if (selectedRegistry.registry_slug === 'docker-hub') {
+    if (!selectedRegistry) {
+      theAlert('error', 'Select a registry')
+      return
+    }
+
+    if (selectedRegistry?.registry_slug === 'docker-hub') {
       if (dockerHubToken === '') {
         theAlert('error', 'Docker hub token is required')
         return
       }
       registryData.credentials = { token: dockerHubToken }
-    } else if (selectedRegistry.registry_slug === 'aws-ecr') {
+    } else if (selectedRegistry?.registry_slug === 'aws-ecr') {
       if (awsPublicKey === '') {
         theAlert('error', 'aws access key is required')
         return
@@ -95,7 +100,7 @@ export default function TheRegistry(): JSX.Element {
         publicKey: awsPublicKey,
         secretKey: awsSecretKey
       }
-    } else if (selectedRegistry.registry_slug === 'azure-acr') {
+    } else if (selectedRegistry?.registry_slug === 'azure-acr') {
       if (acrUsername === '') {
         theAlert('error', 'acr username is required')
         return
@@ -111,8 +116,8 @@ export default function TheRegistry(): JSX.Element {
 
     const formData = new FormData()
     formData.append('project_id', projectId)
-    formData.append('slug', selectedRegistry.registry_slug)
-    formData.append('name', selectedRegistry.registry_name)
+    formData.append('slug', selectedRegistry?.registry_slug)
+    formData.append('name', selectedRegistry?.registry_name)
     formData.append('registry_config', JSON.stringify(registryData?.credentials) )
 
     http.post('/project/container-registry/data-save', formData).then((response) => {
@@ -200,7 +205,7 @@ export default function TheRegistry(): JSX.Element {
           </fieldset>
         </div>
         <div className="pl-6 pr-6">
-          {selectedRegistry.registry_slug === 'docker-hub' && (
+          {selectedRegistry?.registry_slug === 'docker-hub' && (
             <div className="mt-4">
               <label htmlFor="docker-hub-token" className="block text-sm font-medium text-gray-700">
                 Docker Hub Token <span className=" text-red-500 ">*</span>
@@ -214,7 +219,7 @@ export default function TheRegistry(): JSX.Element {
               />
             </div>
           )}
-          {selectedRegistry.registry_slug === 'aws-ecr' && (
+          {selectedRegistry?.registry_slug === 'aws-ecr' && (
             <>
               <div className="mt-4">
                 <label htmlFor="aws-public-key" className="block text-sm font-medium text-gray-700">
@@ -242,7 +247,7 @@ export default function TheRegistry(): JSX.Element {
               </div>
             </>
           )}
-          {selectedRegistry.registry_slug === 'azure-acr' && (
+          {selectedRegistry?.registry_slug === 'azure-acr' && (
             <>
               <div className="mt-4">
                 <label htmlFor="acr-username" className="block text-sm font-medium text-gray-700">

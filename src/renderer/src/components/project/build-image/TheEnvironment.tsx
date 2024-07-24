@@ -23,7 +23,7 @@ function TheEnvironment(): JSX.Element {
 
   function getData(): void {
     http.get(`/project/environment/${getProjectDetail?.id}/get-all`).then((response) => {
-      setEnviornments(response.data.data)
+      setEnviornments(response.data)
     })
   }
 
@@ -123,7 +123,7 @@ function TheEnvironment(): JSX.Element {
             </div>
             {/* Map over the environments array */}
             <div className="mt-2 pl-4 pr-4">
-              {environments.map((env) => (
+              {environments?.map((env) => (
                 <div
                   key={env.id}
                   className="border-[1px] border-gray-300 rounded mb-3 h-[50px] flex justify-between "

@@ -40,7 +40,7 @@ function TheBuilder(): JSX.Element {
   useEffect(() => {
     if (true) {
       http.get(`/project/environment/${getProjectDetail?.id}/get-all`).then((response) => {
-        setEnviornments(response.data.data)
+        setEnviornments(response.data)
       })
     }
   }, [])
@@ -117,7 +117,7 @@ function TheBuilder(): JSX.Element {
                   onChange={(e) => handleEnvironment(e.target.value)}
                 >
                   <option value="">Select Environment</option>
-                  {environments.map((item) => (
+                  {environments?.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.name}
                     </option>
