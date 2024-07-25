@@ -32,3 +32,5 @@ flask db upgrade
 
 flask db revision --rev-id e1c9f2b4d9c7 
 ```
+
+* https://github.com/slab/quill/issues/1120
